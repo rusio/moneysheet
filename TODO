@@ -1,0 +1,3 @@
+Limited period of Gain/Dump. - not just Schedule, but also Period, or only startDate or only endDate.
+Tests for equals that use eval() twice.
+

@@ -1,0 +1,19 @@
+MoneySheet(
+    22000,
+    Portfolio(
+        [
+            Group('Red Hot Chilly Peppers',
+                [
+                    Gain('concert', 50000, EveryMonth()),
+                    Gain('advertising', 2000, EveryWeek()),
+                    Dump('equipment', 600, EveryWeek()),
+                    Dump('prostitutes', 2000, EveryWeek()),
+                    ]),
+            Group('Mars, Bruno',
+                [
+                    Gain('sales', 80000, EveryMonth()),
+                    Dump('cosmetics', 2000, EveryWeek()),
+                    Dump('gay-porn', 800, EveryWeek()),
+                    ]),
+            ])
+)
