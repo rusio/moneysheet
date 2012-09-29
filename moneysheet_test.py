@@ -522,20 +522,20 @@ class MockCalendar:
     def todayDate(self):
         return date(2012, 2, 28)
 
-class AppRunnerTest(unittest.TestCase):
+class ForecastRunnerTest(unittest.TestCase):
 
-    def dateString(self, date):
-        return date.isoformat().split('T')[0]
-
-    def testRunnerWithForecastEndDate(self):
-        numberOfMonths = '1'
+    def testRunForOneMonth(self):
         mockReader = MockReader()
         mockPrinter = MockPrinter()
         mockCalendar = MockCalendar()
-        runner = AppRunner(mockReader, mockPrinter, mockCalendar)
-        runner.main(['moneysheet.py', numberOfMonths])
-
+        runner = ForecastRunner(mockReader, mockPrinter, mockCalendar)
+        numberOfMonths = 1
+        runner.runForPeriod(numberOfMonths)
         self.assertTrue(mockPrinter.expectationsMatch)
+
+########################################################################
+
+# TODO: test for Application
 
 ######################################################################## 
 

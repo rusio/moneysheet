@@ -2,6 +2,7 @@
 
 from datetime import *
 import sys
+import argparse
 
 #########################################################################
 
@@ -358,35 +359,50 @@ class Calendar:
 
 #########################################################################
 
-class AppRunner:
+class ForecastRunner:
 
-    def __init__(self,
-                 inputReader = InputReader('config.py'),
-                 outputPrinter = OutputPrinter(),
-                 calendar = Calendar()):
+    @classmethod
+    def makeRunner(cls, inputFile):
+        return ForecastRunner(InputReader(inputFile),
+                              OutputPrinter(),
+                              Calendar())
+
+    def __init__(self, inputReader, outputPrinter, calendar):
         self.inputReader = inputReader
         self.outputPrinter = outputPrinter
         self.calendar = calendar
 
-    def runApplication(self, startDate, endDate):
+    def runForPeriod(self, numberOfMonths):
+        startDate = self.calendar.todayDate()
+        endDate = startDate + timedelta(numberOfMonths * 30)
         moneySheet = self.inputReader.getMoneySheet()
         forecast = moneySheet.forecastForPeriod(startDate, endDate)
         self.outputPrinter.printForecast(forecast)
 
-    def main(self, cmdLineArgs):
-        # read args TODO: check args
-        numberOfMonths = int(cmdLineArgs[1]) if len(cmdLineArgs) > 1 else 3
-        startDate = self.calendar.todayDate()
-        endDate = startDate + timedelta(numberOfMonths * 30)
-        self.runApplication(startDate, endDate)
-
 #########################################################################
 
-if __name__ == '__main__':
-    print sys.argv
-    runner = AppRunner()
-    runner.main(sys.argv)
+class Application:
 
+    def getArgumentParser(self):
+        parser = argparse.ArgumentParser(description='The "moneysheet" estimates how much money you would have in the near future.')
+        parser.add_argument('-i', '--input-file',
+                            default='config.py',
+                            help='the input file to use for the forecast')
+        parser.add_argument('-m', '--forecast-months',
+                            type=int,
+                            default=3,
+                            help='the number of months for the forecast period')
+        return parser
+
+    def main(self):
+        parser = self.getArgumentParser()
+        args = parser.parse_args()
+        runner = ForecastRunner.makeRunner(args.input_file)
+        runner.runForPeriod(args.forecast_months)
+
+if __name__ == '__main__':
+    application = Application()
+    application.main()
 
 #########################################################################
 
