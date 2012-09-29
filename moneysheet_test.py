@@ -204,10 +204,128 @@ class OnceInTwoWeeksTest(unittest.TestCase):
 ########################################################################
 
 class EveryYearTest(unittest.TestCase):
+    def testValidMonthsInYear(self):
+        dayInMonth = 1
+        # should not raise for the months 1..12
+        for monthInYear in range(1, 13):
+            EveryYear(monthInYear, dayInMonth)
+        # but raise for the invalid months 0 and 13
+        self.assertRaises(ValueError, EveryYear, 0, dayInMonth)
+        self.assertRaises(ValueError, EveryYear, 13, dayInMonth)
+
+    def testValidDaysInJanuary(self):
+        monthInYear = 1
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 32):
+            EveryYear(monthInYear, dayInMonth)
+        # but raise for the invalid days in this month
+        for dayInMonth in [0, 32]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInFebruary(self):
+        monthInYear = 2
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 29):
+            EveryYear(monthInYear, dayInMonth)
+        # but raise for the invalid days in this month
+        for dayInMonth in [0, 29]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInMarch(self):
+        monthInYear = 3
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 32):
+            EveryYear(monthInYear, dayInMonth)
+        # but raise for the invalid days in this month
+        for dayInMonth in [0, 32]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInApril(self):
+        monthInYear = 4
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 31]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInMai(self):
+        monthInYear = 5
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 32]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInJune(self):
+        monthInYear = 6
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 31]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInJuly(self):
+        monthInYear = 7
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 32]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInAugust(self):
+        monthInYear = 8
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 32]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInSeptember(self):
+        monthInYear = 9
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 31]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInOctober(self):
+        monthInYear = 10
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 32]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInNovemer(self):
+        monthInYear = 11
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 31]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
+    def testValidDaysInDecember(self):
+        monthInYear = 12
+        # should not raise for the valid days in this month
+        for dayInMonth in range(1, 31):
+            EveryYear(monthInYear, dayInMonth)
+            # but raise for the invalid days in this month
+        for dayInMonth in [0, 32]:
+            self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
+
     def testDatesForPeriod(self):
         schedule = EveryYear(12, 31)
-        self.assertEquals([date(2012, 12, 31)], schedule.datesForPeriod(date(2011, 12, 24),
-                                                                        date(2012, 1, 21)))
+        self.assertEquals([date(2011, 12, 31),
+                           date(2012, 12, 31)], schedule.datesForPeriod(date(2011, 12, 24),
+                                                                        date(2013, 1, 21)))
 
 
 ########################################################################

@@ -125,23 +125,35 @@ class OnceInTwoWeeks(Schedule):
 #########################################################################
 
 class EveryYear(Schedule):
+    '''
+    A schedule for something that happens periodically every year.
+    '''
 
-    def __init__(self, month, day, firstDate=date.min, lastDate=date.max):
+    def __init__(self, monthInYear, dayInMonth, firstDate=date.min, lastDate=date.max):
         Schedule.__init__(self, firstDate, lastDate)
-        # TODO
-#        if month not in range(1, 13):
-#            raise ValueError('month must be in the range [1..12]')
-#        if day not in range(1, 32):
-#            raise ValueError('day must be in the range [1..31]')
-        # TODO: more logical test for day/month 30.11 but not 31.11 etc
-        self.month = month
-        self.day = day
+        if monthInYear not in range(1, 13):
+            raise ValueError('month must be in the range [1..12]')
+        if dayInMonth not in range(1, 32):
+            raise ValueError('day must be in the range [1..31]')
+        if monthInYear == 2 and dayInMonth in range(29, 32):
+            raise ValueError('dayInMonth must be in the range [1..28] for February')
+        if monthInYear == 4 and dayInMonth in range(31, 32):
+            raise ValueError('dayInMonth must be in the range [1..30] for April')
+        if monthInYear == 6 and dayInMonth in range(31, 32):
+            raise ValueError('dayInMonth must be in the range [1..30] for June')
+        if monthInYear == 9 and dayInMonth in range(31, 32):
+            raise ValueError('dayInMonth must be in the range [1..30] for September')
+        if monthInYear == 11 and dayInMonth in range(31, 32):
+            raise ValueError('dayInMonth must be in the range [1..30] for November')
+
+        self.monthInYear = monthInYear
+        self.dayInMonth = dayInMonth
 
     def periodLength(self):
         return 365 # TODO 366?
 
     def matchesDate(self, dateFromPeriod):
-        return False # TODO
+        return (dateFromPeriod.month, dateFromPeriod.day) == (self.monthInYear, self.dayInMonth)
 
 #########################################################################
 
@@ -236,14 +248,17 @@ class Portfolio:
     def __init__(self, groups):
         self.groups = groups
 
+    # TODO: add monthlyGains, monthlyDumps, monthlyBalance to report
+    # TODO: rename them to average...
+
     def monthlyGains(self):
-        totalDailyGains = sum([change.dailyAverage() 
+        totalDailyGains = sum([change.dailyAverage()
                                for group in self.groups
                                for change in group.changes if change.amount > 0])
         return totalDailyGains * EveryMonth().periodLength()
 
     def monthlyDumps(self):
-        totalDailyDumps = sum([change.dailyAverage() 
+        totalDailyDumps = sum([change.dailyAverage()
                                for group in self.groups
                                for change in group.changes if change.amount < 0])
         return totalDailyDumps * EveryMonth().periodLength()
@@ -261,7 +276,7 @@ class Portfolio:
 
     def compareTwoTransfers(self, t1, t2):
         result = cmp(t1.date, t2.date)
-        if (result == 0):
+        if result == 0:
             result = cmp(t1.reason, t2.reason)
         return result
 
@@ -352,8 +367,6 @@ class AppRunner:
         self.inputReader = inputReader
         self.outputPrinter = outputPrinter
         self.calendar = calendar
-
-    # TODO: use mocked InputReader and OutputWriter for testing
 
     def runApplication(self, startDate, endDate):
         moneySheet = self.inputReader.getMoneySheet()
