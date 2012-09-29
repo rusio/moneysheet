@@ -124,6 +124,27 @@ class OnceInTwoWeeks(Schedule):
 
 #########################################################################
 
+class EveryYear(Schedule):
+
+    def __init__(self, month, day, firstDate=date.min, lastDate=date.max):
+        Schedule.__init__(self, firstDate, lastDate)
+        # TODO
+#        if month not in range(1, 13):
+#            raise ValueError('month must be in the range [1..12]')
+#        if day not in range(1, 32):
+#            raise ValueError('day must be in the range [1..31]')
+        # TODO: more logical test for day/month 30.11 but not 31.11 etc
+        self.month = month
+        self.day = day
+
+    def periodLength(self):
+        return 365 # TODO 366?
+
+    def matchesDate(self, dateFromPeriod):
+        return False # TODO
+
+#########################################################################
+
 class Change:
     
     def __init__(self, description, amount, schedule):
@@ -262,11 +283,11 @@ class MoneySheet:
         balance = self.initialBalance
         transfers = self.portfolio.transfersForPeriod(startDate, endDate)
         forecast = []
-        forecast.append((Transfer(startDate, 'period-begin', 0), self.initialBalance))
+        forecast.append((Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance))
         for transfer in transfers:
             balance = balance + transfer.amount
             forecast.append((transfer, balance))
-        forecast.append((Transfer(endDate, 'period-end', 0), balance))
+        forecast.append((Transfer(endDate, 'PERIOD-END', 0), balance))
         return forecast
 
     def __eq__(self, other):

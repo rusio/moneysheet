@@ -203,6 +203,15 @@ class OnceInTwoWeeksTest(unittest.TestCase):
 
 ########################################################################
 
+class EveryYearTest(unittest.TestCase):
+    def testDatesForPeriod(self):
+        schedule = EveryYear(12, 31)
+        self.assertEquals([date(2012, 12, 31)], schedule.datesForPeriod(date(2011, 12, 24),
+                                                                        date(2012, 1, 21)))
+
+
+########################################################################
+
 class ChangeTest(unittest.TestCase):
 
     def TODOtestEquals(self):
@@ -311,7 +320,7 @@ class MoneySheetTest(unittest.TestCase):
         self.moneySheet = MoneySheet(initialBalance, portfolio)
 
     def testForecast(self):
-        self.assertEquals([(Transfer(date(2012, 2, 1), 'period-begin', 0), 1000),
+        self.assertEquals([(Transfer(date(2012, 2, 1), 'PERIOD-BEGIN', 0), 1000),
                            (Transfer(date(2012, 2, 1), 'rental', -600), 400),
                            (Transfer(date(2012, 2, 1), 'school', -200), 200),
                            (Transfer(date(2012, 2, 10), 'car', -400), -200),
@@ -319,7 +328,7 @@ class MoneySheetTest(unittest.TestCase):
                            (Transfer(date(2012, 2, 15), 'lessons', 100), 200),
                            (Transfer(date(2012, 2, 20), 'dope', -500), -300),
                            (Transfer(date(2012, 2, 28), 'salary', 2000), 1700),
-                           (Transfer(date(2012, 2, 28), 'period-end', 0), 1700)],
+                           (Transfer(date(2012, 2, 28), 'PERIOD-END', 0), 1700)],
                           self.moneySheet.forecastForPeriod(date(2012, 2, 1),
                                                             date(2012, 2, 28)))
 
@@ -383,10 +392,10 @@ class MockPrinter():
 
     def printForecast(self, actualForecast):
         expectedForecast = ([
-            (Transfer(date(2012, 2, 28), 'period-begin', 0), 1000),
+            (Transfer(date(2012, 2, 28), 'PERIOD-BEGIN', 0), 1000),
             (Transfer(date(2012, 3, 1), 'scholarship', +400), 1400),
             (Transfer(date(2012, 3, 1), 'train-card', -120), 1280),
-            (Transfer(date(2012, 3, 29), 'period-end', 0), 1280),
+            (Transfer(date(2012, 3, 29), 'PERIOD-END', 0), 1280),
         ])
         self.expectationsMatch = (actualForecast == expectedForecast)
 
