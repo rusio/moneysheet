@@ -1,1 +1,6 @@
+*.pyc
 .idea
+moneysheet.iml
+moneysheet.ipr
+moneysheet.iws
+
