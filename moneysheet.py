@@ -337,7 +337,7 @@ class MoneySheet:
 #########################################################################
 
 
-class InputReader:  # TODO: rename to MoneySheetReader
+class MoneySheetReader:
   """
   A reader for reading the input file into a MoneySheet object.
   """
@@ -354,7 +354,7 @@ class InputReader:  # TODO: rename to MoneySheetReader
 #########################################################################
 
 
-class OutputPrinter:  # TODO: rename to ForecastPrinter
+class ForecastPrinter:
   """
   Prints a forecast in a formatted way to the console.
   """
@@ -381,7 +381,7 @@ class OutputPrinter:  # TODO: rename to ForecastPrinter
 #########################################################################
 
 
-class Calendar:  # TODO: rename to SystemCalendar
+class SystemCalendar:
   """
   Retrieves the date from the operating system.
   """
@@ -400,9 +400,9 @@ class ForecastRunner:
 
   @classmethod
   def makeRunner(cls, inputFile):
-    return ForecastRunner(InputReader(inputFile),
-                          OutputPrinter(),
-                          Calendar())
+    return ForecastRunner(MoneySheetReader(inputFile),
+                          ForecastPrinter(),
+                          SystemCalendar())
 
   def __init__(self, inputReader, outputPrinter, calendar):
     self.inputReader = inputReader

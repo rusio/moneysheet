@@ -443,16 +443,18 @@ class MoneySheetTest(unittest.TestCase):
 
 ######################################################################## 
 
-class OuputPrinterTest(unittest.TestCase):
+
+class ForecastPrinterTest(unittest.TestCase):
   def testFormattingOfMoneyValues(self):
-    printer = OutputPrinter()
+    printer = ForecastPrinter()
     self.assertEquals('       0', printer.formatMoney(0))
     self.assertEquals('    -123', printer.formatMoney(-123))
     self.assertEquals('    +456', printer.formatMoney(456))
 
 ######################################################################## 
 
-class InputReaderTest(unittest.TestCase):
+
+class MoneySheetReaderTest(unittest.TestCase):
   def testReadingOfMoneysheetData(self):
     expectedSheet = MoneySheet(
       22000,
@@ -474,7 +476,7 @@ class InputReaderTest(unittest.TestCase):
         ])
     )
 
-    reader = InputReader('impresario.sheet')
+    reader = MoneySheetReader('impresario.sheet')
     actualSheet = reader.getMoneySheet()
     self.assertEquals(expectedSheet, actualSheet)
 
