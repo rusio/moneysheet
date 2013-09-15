@@ -6,23 +6,24 @@ import argparse
 
 #########################################################################
 
+
 class Schedule:
-  '''
+  """
   A schedule for a periodic event. Examples:
   - monthly payment of salary
   - weekly drinking in the strip club
   - daily smoking of cigarettes
-  '''
+  """
 
   def __init__(self, firstDate=date.min, lastDate=date.max):
     self._firstDate = firstDate
     self._lastDate = lastDate
 
   def dailyPortionOf(self, value):
-    '''
+    """
     Normalizes the given value to a daily basis,
     according to the period of this schedule.
-    '''
+    """
     if not value > 0:
       raise ValueError('value must be positive')
     return float(value) / self.periodLength()
@@ -55,9 +56,9 @@ class Schedule:
 #########################################################################
 
 class EveryDay(Schedule):
-  '''
+  """
   A trivial schedule for something that happens every day.
-  '''
+  """
 
   def __init__(self, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
@@ -71,9 +72,9 @@ class EveryDay(Schedule):
 
 
 class EveryMonth(Schedule):
-  '''
+  """
   A schedule for something that happens periodically every month.
-  '''
+  """
 
   def __init__(self, firingDay=1, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
@@ -89,7 +90,12 @@ class EveryMonth(Schedule):
 
 #########################################################################
 
+
 class EveryWeek(Schedule):
+  """
+  A schedule for something that happens periodically every week.
+  """
+
   def __init__(self, weekday=1, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
     if weekday not in range(1, 8):
@@ -104,7 +110,12 @@ class EveryWeek(Schedule):
 
 #########################################################################
 
+
 class OnceInTwoWeeks(Schedule):
+  """
+  A schedule for something that happens once in two weeks.
+  """
+
   def __init__(self, weekday=1, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
     if weekday not in range(1, 8):
@@ -124,10 +135,11 @@ class OnceInTwoWeeks(Schedule):
 
 #########################################################################
 
+
 class EveryYear(Schedule):
-  '''
+  """
   A schedule for something that happens periodically every year.
-  '''
+  """
 
   def __init__(self, monthInYear, dayInMonth, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
@@ -150,14 +162,20 @@ class EveryYear(Schedule):
     self.dayInMonth = dayInMonth
 
   def periodLength(self):
-    return 365 # TODO 366?
+    return 365  # TODO 366?
 
   def matchesDate(self, dateFromPeriod):
     return (dateFromPeriod.month, dateFromPeriod.day) == (self.monthInYear, self.dayInMonth)
 
 #########################################################################
 
+
 class Change:
+  """
+  A change (positive or negative) in the money balance which
+  has a fixed amount and happens periodically at a given schedule.
+  """
+
   def __init__(self, description, amount, schedule):
     self.description = description
     self.amount = amount
@@ -177,33 +195,36 @@ class Change:
 
 #########################################################################
 
+
 class Gain(Change):
-  '''
-  Incoming money that comes periodically, based on a schedule.
-  '''
+  """
+  Incoming money that comes in periodically, based on a schedule.
+  """
 
   def __init__(self, destination, amount, schedule):
     Change.__init__(self, destination, +amount, schedule)
 
 #########################################################################
 
+
 class Dump(Change):
-  '''
-  Outgoing money that goes periodically, based on a schedule.
-  '''
+  """
+  Outgoing money that goes out periodically, based on a schedule.
+  """
 
   def __init__(self, destination, amount, schedule):
     Change.__init__(self, destination, -amount, schedule)
 
 #########################################################################
 
+
 class Transfer:
-  '''
-  A concrete money transfer on a given date. Note the difference from
+  """
+  A concrete transfer of money on a given date. Note the difference from
   Gain and Dump - a Gain or Dump is just the description of the incoming
   or outgoing money. A Transfer is the actual movement of the money
   on a concrete date, according to the schedule of the Gain or Dump.
-  '''
+  """
 
   def __init__(self, date, reason, amount):
     self.date = date
@@ -221,10 +242,11 @@ class Transfer:
 
 #########################################################################
 
+
 class Group:
-  '''
+  """
   A group of multiple Changes under a common category.
-  '''
+  """
 
   def __init__(self, name, changes):
     self.name = name
@@ -240,10 +262,11 @@ class Group:
 
 #########################################################################
 
+
 class Portfolio:
-  '''
-  The Portfolio contains the data for all Gains and Dumps grouped in groups.
-  '''
+  """
+  The Portfolio contains the data for all Gains and Dumps of the user.
+  """
 
   def __init__(self, groups):
     self.groups = groups
@@ -262,7 +285,6 @@ class Portfolio:
                            for group in self.groups
                            for change in group.changes if change.amount < 0])
     return totalDailyDumps * EveryMonth().periodLength()
-
 
   def monthlyBalance(self):
     return self.monthlyGains() - self.monthlyDumps()
@@ -285,10 +307,12 @@ class Portfolio:
 
 #########################################################################
 
+
 class MoneySheet:
-  '''
-  The MoneySheet provides methods for calculating financial indicators.
-  '''
+  """
+  The MoneySheet provides central methods for calculating the
+  financial forecast. It is bundles the core logic of the app.
+  """
 
   def __init__(self, initialBalance, portfolio):
     self.initialBalance = initialBalance
@@ -300,7 +324,7 @@ class MoneySheet:
     forecast = []
     forecast.append((Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance))
     for transfer in transfers:
-      balance = balance + transfer.amount
+      balance += transfer.amount
       forecast.append((transfer, balance))
     forecast.append((Transfer(endDate, 'PERIOD-END', 0), balance))
     return forecast
@@ -312,7 +336,12 @@ class MoneySheet:
 
 #########################################################################
 
-class InputReader:
+
+class InputReader:  # TODO: rename to MoneySheetReader
+  """
+  A reader for reading the input file into a MoneySheet object.
+  """
+
   def __init__(self, sheetFilePath):
     self.sheetFilePath = sheetFilePath
 
@@ -324,10 +353,11 @@ class InputReader:
 
 #########################################################################
 
-class OutputPrinter:
-  '''
-  Reads objects from strings and writes them to strings.
-  '''
+
+class OutputPrinter:  # TODO: rename to ForecastPrinter
+  """
+  Prints a forecast in a formatted way to the console.
+  """
 
   def printForecast(self, forecast):
     prevTransfer = Transfer(date(1, 1, 2), 'empty', 0)
@@ -350,14 +380,24 @@ class OutputPrinter:
 
 #########################################################################
 
-class Calendar:
+
+class Calendar:  # TODO: rename to SystemCalendar
+  """
+  Retrieves the date from the operating system.
+  """
+
   def todayDate(self):
     nowDateTime = datetime.now()
     return nowDateTime.date()
 
 #########################################################################
 
+
 class ForecastRunner:
+  """
+  Executes the a forecast run, the whole use-case.
+  """
+
   @classmethod
   def makeRunner(cls, inputFile):
     return ForecastRunner(InputReader(inputFile),
@@ -378,10 +418,15 @@ class ForecastRunner:
 
 #########################################################################
 
+
 class Application:
+  """
+  Main entry point of the application.
+  """
+
   def getArgumentParser(self):
     parser = argparse.ArgumentParser(
-      description='The "moneysheet" estimates how much money you would have in the near future.')
+      description='The money sheet estimates how much money you would have in the near future.')
     parser.add_argument('-i', '--input-file',
                         default='config.py',
                         help='the input file to use for the forecast')
