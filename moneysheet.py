@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 from datetime import *
-import sys
 import argparse
 
 #########################################################################
@@ -28,7 +27,7 @@ class Schedule:
       raise ValueError('value must be positive')
     return float(value) / self.periodLength()
 
-  def periodLength(self): # abstract
+  def periodLength(self):  # abstract
     raise NotImplementedError('subclass must implement periodLength()')
 
   def datesForPeriod(self, startDate, endDate):
@@ -50,10 +49,11 @@ class Schedule:
       date = date + oneDay
     return result
 
-  def matchesDate(self, dateFromPeriod): # abstract
+  def matchesDate(self, dateFromPeriod):  # abstract
     raise NotImplementedError('subclass must implement matchesDate()')
 
 #########################################################################
+
 
 class EveryDay(Schedule):
   """
@@ -62,7 +62,6 @@ class EveryDay(Schedule):
 
   def __init__(self, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
-
 
   def periodLength(self):
     return 1
@@ -128,7 +127,7 @@ class OnceInTwoWeeks(Schedule):
 
   def matchesDate(self, dateFromPeriod):
     if dateFromPeriod.isoweekday() == self.weekday:
-      self.matchCount = self.matchCount + 1
+      self.matchCount += 1
       if self.matchCount % 2 == 1:
         return True
     return False
@@ -321,8 +320,7 @@ class MoneySheet:
   def forecastForPeriod(self, startDate, endDate):
     balance = self.initialBalance
     transfers = self.portfolio.transfersForPeriod(startDate, endDate)
-    forecast = []
-    forecast.append((Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance))
+    forecast = [(Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance)]
     for transfer in transfers:
       balance += transfer.amount
       forecast.append((transfer, balance))
@@ -450,7 +448,5 @@ if __name__ == '__main__':
 #########################################################################
 
 #########################################################################
-
-
 
 

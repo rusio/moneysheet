@@ -6,6 +6,7 @@ from moneysheet import *
 
 ########################################################################
 
+
 class ScheduleTest(unittest.TestCase):
   def testNormalization_ExceptionForNegativeValue(self):
     self.assertRaises(ValueError,
@@ -46,6 +47,7 @@ class EveryDayTest(unittest.TestCase):
 
 ########################################################################
 
+
 class EveryMonthTest(unittest.TestCase):
   def testExceptionForInvalidFiringDay(self):
     self.assertRaises(ValueError, EveryMonth, 0)
@@ -61,27 +63,23 @@ class EveryMonthTest(unittest.TestCase):
 
   def testNoDateInsideInterval_0a(self):
     schedule = EveryMonth(15)
-    self.assertEquals([],
-      schedule.datesForPeriod(date(2012, 2, 10),
-                              date(2012, 2, 14)))
+    self.assertEquals([], schedule.datesForPeriod(date(2012, 2, 10),
+                                                  date(2012, 2, 14)))
 
   def testNoDateInsideInterval_0b(self):
     schedule = EveryMonth(15)
-    self.assertEquals([],
-      schedule.datesForPeriod(date(2012, 2, 16),
-                              date(2012, 2, 20)))
+    self.assertEquals([], schedule.datesForPeriod(date(2012, 2, 16),
+                                                  date(2012, 2, 20)))
 
   def testNoDateInsideInterval_1(self):
     schedule = EveryMonth(15)
-    self.assertEquals([],
-      schedule.datesForPeriod(date(2012, 2, 16),
-                              date(2012, 3, 14)))
+    self.assertEquals([], schedule.datesForPeriod(date(2012, 2, 16),
+                                                  date(2012, 3, 14)))
 
   def testNoDateInsideInterval_2(self):
     schedule = EveryMonth(15)
-    self.assertEquals([],
-      schedule.datesForPeriod(date(2012, 12, 16),
-                              date(2013, 1, 14)))
+    self.assertEquals([], schedule.datesForPeriod(date(2012, 12, 16),
+                                                  date(2013, 1, 14)))
 
   def testOneDateInsideInterval(self):
     schedule = EveryMonth(15)
@@ -157,6 +155,7 @@ class EveryMonthTest(unittest.TestCase):
 
 ######################################################################## 
 
+
 class EveryWeekTest(unittest.TestCase):
   def exceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, EveryWeek, 0)
@@ -178,6 +177,7 @@ class EveryWeekTest(unittest.TestCase):
 
 ########################################################################
 
+
 class OnceInTwoWeeksTest(unittest.TestCase):
   def exceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, OnceInTwoWeeks, 0)
@@ -198,6 +198,7 @@ class OnceInTwoWeeksTest(unittest.TestCase):
                                               date(2011, 12, 24)))
 
 ########################################################################
+
 
 class EveryYearTest(unittest.TestCase):
   def testValidMonthsInYear(self):
@@ -299,7 +300,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInNovemer(self):
+  def testValidDaysInNovember(self):
     monthInYear = 11
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -332,6 +333,7 @@ class ChangeTest(unittest.TestCase):
     pass
 
 ########################################################################
+
 
 class GainTest(unittest.TestCase):
   def testOneSalaryDuringOneMonth(self):
@@ -372,6 +374,7 @@ class GainTest(unittest.TestCase):
     self.assertEquals(60, gain.dailyAverage())
 
 ######################################################################## 
+
 
 class GroupTest(unittest.TestCase):
   def testDailyAverage(self):
@@ -482,6 +485,7 @@ class MoneySheetReaderTest(unittest.TestCase):
 
 ######################################################################## 
 
+
 class MockReader:
   def getMoneySheet(self):
     testData = MoneySheet(
@@ -499,12 +503,13 @@ class MockReader:
 
 class MockPrinter():
   def printForecast(self, actualForecast):
-    expectedForecast = ([
-                          (Transfer(date(2012, 2, 28), 'PERIOD-BEGIN', 0), 1000),
-                          (Transfer(date(2012, 3, 1), 'scholarship', +400), 1400),
-                          (Transfer(date(2012, 3, 1), 'train-card', -120), 1280),
-                          (Transfer(date(2012, 3, 29), 'PERIOD-END', 0), 1280),
-                        ])
+    expectedForecast = (
+      [
+        (Transfer(date(2012, 2, 28), 'PERIOD-BEGIN', 0), 1000),
+        (Transfer(date(2012, 3, 1), 'scholarship', +400), 1400),
+        (Transfer(date(2012, 3, 1), 'train-card', -120), 1280),
+        (Transfer(date(2012, 3, 29), 'PERIOD-END', 0), 1280),
+      ])
     self.expectationsMatch = (actualForecast == expectedForecast)
 
 
