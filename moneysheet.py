@@ -227,6 +227,11 @@ class Transfer:
   on a concrete date, according to the schedule of the Gain or Dump.
   """
 
+  @classmethod
+  def leapsMonth(cls, transfer1, transfer2):
+    # FIXME: implement general leap between months
+    return transfer1.date.day != 1 and transfer2.date.day == 1
+
   def __init__(self, date, reason, amount):
     self.date = date
     self.reason = reason
@@ -360,14 +365,14 @@ class ForecastPrinter:
     self.outputFile = outputFile
 
   def printForecast(self, forecast):
-    prevTransfer = Transfer(date(1, 1, 2), 'empty', 0)
+    prevTransfer = None
     for element in forecast:
       transfer = element[0]
       balance = element[1]
-      if transfer.date.day == 1 and prevTransfer.date.day != 1:
+      if prevTransfer and Transfer.leapsMonth(prevTransfer, transfer):
         print('', file=self.outputFile)
         print(transfer.date.ctime(), file=self.outputFile)
-        print('------------------------')
+        print('------------------------', file=self.outputFile)
       print(str(transfer.date),
             self.formatMoney(transfer.amount),
             '',
