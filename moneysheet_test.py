@@ -8,23 +8,16 @@ from moneysheet import *
 
 
 class ScheduleTest(unittest.TestCase):
+  def testPeriodLength_ExceptionBecauseAbstract(self):
+    self.assertRaises(NotImplementedError,
+                      Schedule.periodLength,
+                      Schedule())
+
   def testNormalization_ExceptionForNegativeValue(self):
     self.assertRaises(ValueError,
                       Schedule.dailyPortionOf,
                       Schedule(),
                       -1)
-
-  def testNormalization_1(self):
-    schedule = EveryMonth(15)
-    self.assertEquals(40, schedule.dailyPortionOf(1200))
-
-  def testNormalization_2(self):
-    schedule = EveryMonth(15)
-    self.assertAlmostEquals(3.3333333, schedule.dailyPortionOf(100))
-
-  def testNormalization_3(self):
-    schedule = EveryWeek(3)
-    self.assertAlmostEquals(50, schedule.dailyPortionOf(350))
 
   def testLimitedActivePeriod(self):
     schedule = EveryDay(firstDate=date(2011, 12, 24), lastDate=date(2011, 12, 26))
@@ -36,6 +29,10 @@ class ScheduleTest(unittest.TestCase):
 
 
 class EveryDayTest(unittest.TestCase):
+  def testNormalization(self):
+    schedule = EveryDay()
+    self.assertEquals(50, schedule.dailyPortionOf(50))
+
   def testDatesForPeriod(self):
     schedule = EveryDay()
     self.assertEquals([date(2011, 12, 30),
@@ -60,6 +57,11 @@ class EveryMonthTest(unittest.TestCase):
                       [date(2013, 2, 10),
                        date(2012, 2, 20)],
       [])
+
+  def testNormalization(self):
+    schedule = EveryMonth(15)
+    self.assertEquals(40, schedule.dailyPortionOf(1200))
+    self.assertAlmostEquals(3.3333333, schedule.dailyPortionOf(100))
 
   def testNoDateInsideInterval_0a(self):
     schedule = EveryMonth(15)
@@ -157,9 +159,13 @@ class EveryMonthTest(unittest.TestCase):
 
 
 class EveryWeekTest(unittest.TestCase):
-  def exceptionForInvalidWeekday(self):
+  def testExceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, EveryWeek, 0)
     self.assertRaises(ValueError, EveryWeek, 8)
+
+  def testNormalization(self):
+    schedule = EveryWeek(3)
+    self.assertAlmostEquals(50, schedule.dailyPortionOf(350))
 
   def testDatesForPeriod(self):
     schedule = EveryWeek(6)
@@ -179,9 +185,15 @@ class EveryWeekTest(unittest.TestCase):
 
 
 class OnceInTwoWeeksTest(unittest.TestCase):
-  def exceptionForInvalidWeekday(self):
+  def testExceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, OnceInTwoWeeks, 0)
     self.assertRaises(ValueError, OnceInTwoWeeks, 8)
+
+  def testNormalization(self):
+    schedule = OnceInTwoWeeks()
+    self.assertEquals(1, schedule.dailyPortionOf(14))
+    self.assertLess(schedule.dailyPortionOf(13), 1)
+    self.assertGreater(schedule.dailyPortionOf(15), 1)
 
   def testDatesForPeriod(self):
     schedule = OnceInTwoWeeks(6)
@@ -383,6 +395,7 @@ class GroupTest(unittest.TestCase):
     self.assertEquals(200, group.dailyAverage())
 
 ######################################################################## 
+
 
 class PortfolioTest(unittest.TestCase):
   def setUp(self):
