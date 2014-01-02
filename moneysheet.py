@@ -18,6 +18,12 @@ class Schedule:
     self._firstDate = firstDate
     self._lastDate = lastDate
 
+  def periodLength(self):  # abstract
+    raise NotImplementedError('subclass must implement periodLength()')
+
+  def matchesDate(self, dateFromPeriod):  # abstract
+    raise NotImplementedError('subclass must implement matchesDate()')
+
   def dailyPortionOf(self, value):
     """
     Normalizes the given value to a daily basis,
@@ -26,9 +32,6 @@ class Schedule:
     if not value > 0:
       raise ValueError('value must be positive')
     return float(value) / self.periodLength()
-
-  def periodLength(self):  # abstract
-    raise NotImplementedError('subclass must implement periodLength()')
 
   def datesForPeriod(self, startDate, endDate):
     if startDate > endDate:
@@ -48,9 +51,6 @@ class Schedule:
         result.append(date)
       date = date + oneDay
     return result
-
-  def matchesDate(self, dateFromPeriod):  # abstract
-    raise NotImplementedError('subclass must implement matchesDate()')
 
 #########################################################################
 
