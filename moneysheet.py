@@ -1,9 +1,11 @@
 #!/usr/bin/python
 
+from __future__ import print_function
 from datetime import *
 import argparse
 
 #########################################################################
+import sys
 
 
 class Schedule:
@@ -236,6 +238,9 @@ class Transfer:
     equalAmounts = self.amount == other.amount
     return equalDates and equalReasons and equalAmounts
 
+  def sortingKey(self):
+    return str(self.date) + self.reason
+
   def __repr__(self):
     return 'Transfer(' + str(self.date) + ',' + self.reason + ',' + str(self.amount) + ')'
 
@@ -293,13 +298,7 @@ class Portfolio:
                     for group in self.groups
                     for change in group.changes
                     for transfer in change.transfersForPeriod(startDate, endDate)]
-    return sorted(allTransfers, self.compareTwoTransfers)
-
-  def compareTwoTransfers(self, t1, t2):
-    result = cmp(t1.date, t2.date)
-    if result == 0:
-      result = cmp(t1.reason, t2.reason)
-    return result
+    return sorted(allTransfers, key=(lambda x: x.sortingKey()))
 
   def __eq__(self, other):
     return self.groups == other.groups
@@ -335,7 +334,7 @@ class MoneySheet:
 #########################################################################
 
 
-class MoneySheetReader:
+class SheetReader:
   """
   A reader for reading the input file into a MoneySheet object.
   """
@@ -357,17 +356,25 @@ class ForecastPrinter:
   Prints a forecast in a formatted way to the console.
   """
 
+  def __init__(self, outputFile=sys.stdout):
+    self.outputFile = outputFile
+
   def printForecast(self, forecast):
     prevTransfer = Transfer(date(1, 1, 2), 'empty', 0)
     for element in forecast:
       transfer = element[0]
       balance = element[1]
       if transfer.date.day == 1 and prevTransfer.date.day != 1:
-        print ''
-        print transfer.date.ctime()
-        print '------------------------'
-      print str(transfer.date), self.formatMoney(transfer.amount), '', transfer.reason.ljust(20), '|', self.formatMoney(
-        balance)
+        print('', file=self.outputFile)
+        print(transfer.date.ctime(), file=self.outputFile)
+        print('------------------------')
+      print(str(transfer.date),
+            self.formatMoney(transfer.amount),
+            '',
+            transfer.reason.ljust(20),
+            '|',
+            self.formatMoney(balance),
+            file=self.outputFile)
       prevTransfer = transfer
 
   def formatMoney(self, value):
@@ -396,12 +403,6 @@ class ForecastRunner:
   Executes the a forecast run, the whole use-case.
   """
 
-  @classmethod
-  def makeRunner(cls, inputFile):
-    return ForecastRunner(MoneySheetReader(inputFile),
-                          ForecastPrinter(),
-                          SystemCalendar())
-
   def __init__(self, inputReader, outputPrinter, calendar):
     self.inputReader = inputReader
     self.outputPrinter = outputPrinter
@@ -417,12 +418,15 @@ class ForecastRunner:
 #########################################################################
 
 
-class Application:
+class ConsoleUI:
   """
   Main entry point of the application.
   """
 
-  def getArgumentParser(self):
+  def __init__(self):
+    self.parser = self.makeArgumentParser()
+
+  def makeArgumentParser(self):
     parser = argparse.ArgumentParser(
       description='The money sheet estimates how much money you would have in the near future.')
     parser.add_argument('-i', '--input-file',
@@ -434,16 +438,17 @@ class Application:
                         help='the number of months for the forecast period')
     return parser
 
-  def main(self):
-    parser = self.getArgumentParser()
-    args = parser.parse_args()
-    runner = ForecastRunner.makeRunner(args.input_file)
+  def runApplication(self):
+    args = self.parser.parse_args()
+    runner = ForecastRunner(SheetReader(args.input_file),
+                            ForecastPrinter(),
+                            SystemCalendar())
     runner.runForPeriod(args.forecast_months)
 
 
 if __name__ == '__main__':
-  application = Application()
-  application.main()
+  ui = ConsoleUI()
+  ui.runApplication()
 
 #########################################################################
 

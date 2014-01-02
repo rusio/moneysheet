@@ -8,24 +8,24 @@ from moneysheet import *
 
 
 class ScheduleTest(unittest.TestCase):
-  def testPeriodLength_ExceptionBecauseAbstract(self):
+  def test_PeriodLength_ExceptionBecauseAbstract(self):
     self.assertRaises(NotImplementedError,
                       Schedule.periodLength,
                       Schedule())
 
-  def testMatchesDate_ExceptionBecauseAbstract(self):
+  def test_MatchesDate_ExceptionBecauseAbstract(self):
     self.assertRaises(NotImplementedError,
                       Schedule.matchesDate,
                       Schedule(),
                       None)
 
-  def testNormalization_ExceptionForNegativeValue(self):
+  def test_Normalization_ExceptionForNegativeValue(self):
     self.assertRaises(ValueError,
                       Schedule.dailyPortionOf,
                       Schedule(),
                       -1)
 
-  def testLimitedActivePeriod(self):
+  def test_LimitedActivePeriod(self):
     schedule = EveryDay(firstDate=date(2011, 12, 24), lastDate=date(2011, 12, 26))
     self.assertEquals([date(2011, 12, 24),
                        date(2011, 12, 25),
@@ -35,14 +35,14 @@ class ScheduleTest(unittest.TestCase):
 
 
 class EveryDayTest(unittest.TestCase):
-  def testNormalization(self):
+  def test_Normalization(self):
     schedule = EveryDay()
     self.assertEquals(10, schedule.dailyPortionOf(10))
     self.assertEquals(1, schedule.dailyPortionOf(1))
     self.assertLess(schedule.dailyPortionOf(0.9), 1)
     self.assertGreater(schedule.dailyPortionOf(1.1), 1)
 
-  def testDatesForPeriod(self):
+  def test_DatesForPeriod(self):
     schedule = EveryDay()
     self.assertEquals([date(2011, 12, 30),
                        date(2011, 12, 31),
@@ -55,11 +55,11 @@ class EveryDayTest(unittest.TestCase):
 
 
 class EveryMonthTest(unittest.TestCase):
-  def testExceptionForInvalidFiringDay(self):
+  def test_ExceptionForInvalidFiringDay(self):
     self.assertRaises(ValueError, EveryMonth, 0)
     self.assertRaises(ValueError, EveryMonth, 29)
 
-  def testExceptionForInvalidInterval(self):
+  def test_ExceptionForInvalidInterval(self):
     schedule = EveryMonth(15)
     self.assertRaises(ValueError,
                       schedule.datesForPeriod,
@@ -67,100 +67,100 @@ class EveryMonthTest(unittest.TestCase):
                        date(2012, 2, 20)],
       [])
 
-  def testNormalization(self):
+  def test_Normalization(self):
     schedule = EveryMonth()
     self.assertEquals(10, schedule.dailyPortionOf(300))
     self.assertEquals(1, schedule.dailyPortionOf(30))
     self.assertLess(schedule.dailyPortionOf(29), 1)
     self.assertGreater(schedule.dailyPortionOf(31), 1)
 
-  def testNoDateInsideInterval_0a(self):
+  def test_NoDateInsideInterval_0a(self):
     schedule = EveryMonth(15)
     self.assertEquals([], schedule.datesForPeriod(date(2012, 2, 10),
                                                   date(2012, 2, 14)))
 
-  def testNoDateInsideInterval_0b(self):
+  def test_NoDateInsideInterval_0b(self):
     schedule = EveryMonth(15)
     self.assertEquals([], schedule.datesForPeriod(date(2012, 2, 16),
                                                   date(2012, 2, 20)))
 
-  def testNoDateInsideInterval_1(self):
+  def test_NoDateInsideInterval_1(self):
     schedule = EveryMonth(15)
     self.assertEquals([], schedule.datesForPeriod(date(2012, 2, 16),
                                                   date(2012, 3, 14)))
 
-  def testNoDateInsideInterval_2(self):
+  def test_NoDateInsideInterval_2(self):
     schedule = EveryMonth(15)
     self.assertEquals([], schedule.datesForPeriod(date(2012, 12, 16),
                                                   date(2013, 1, 14)))
 
-  def testOneDateInsideInterval(self):
+  def test_OneDateInsideInterval(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15)],
                       schedule.datesForPeriod(date(2012, 2, 1),
                                               date(2012, 2, 28)))
 
-  def testOneDateAtIntervalStart(self):
+  def test_OneDateAtIntervalStart(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15)],
                       schedule.datesForPeriod(date(2012, 2, 15),
                                               date(2012, 2, 28)))
 
-  def testOneDateAtIntervalEnd(self):
+  def test_OneDateAtIntervalEnd(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15)],
                       schedule.datesForPeriod(date(2012, 2, 1),
                                               date(2012, 2, 15)))
 
-  def testOneDateAtSameStartAndEndDate(self):
+  def test_OneDateAtSameStartAndEndDate(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15)],
                       schedule.datesForPeriod(date(2012, 2, 15),
                                               date(2012, 2, 15)))
 
-  def testTwoDatesInsideInterval_1(self):
+  def test_TwoDatesInsideInterval_1(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15), date(2012, 3, 15)],
                       schedule.datesForPeriod(date(2012, 2, 1),
                                               date(2012, 3, 31)))
 
-  def testTwoDatesInsideInterval_2(self):
+  def test_TwoDatesInsideInterval_2(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15), date(2012, 3, 15)],
                       schedule.datesForPeriod(date(2012, 2, 14),
                                               date(2012, 3, 16)))
 
-  def testTwoDatesInsideInterval_3(self):
+  def test_TwoDatesInsideInterval_3(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15), date(2012, 3, 15)],
                       schedule.datesForPeriod(date(2012, 1, 16),
                                               date(2012, 4, 14)))
 
-  def testTwoDatesAtIntervalBorders_1(self):
+  def test_TwoDatesAtIntervalBorders_1(self):
     schedule = EveryMonth(15)
     self.assertEquals([date(2012, 2, 15), date(2012, 3, 15)],
                       schedule.datesForPeriod(date(2012, 2, 15),
                                               date(2012, 3, 15)))
 
-  def testOneYearAtMiddleOfMonth(self):
+  def test_OneYearAtMiddleOfMonth(self):
     schedule = EveryMonth(15)
     self.assertEquals(12,
                       len(schedule.datesForPeriod(date(2012, 1, 1),
                                                   date(2013, 1, 1))))
 
-  def testOneYearAtIntervalBorders(self):
+  def test_OneYearAtIntervalBorders(self):
     schedule = EveryMonth(15)
     self.assertEquals(13,
                       len(schedule.datesForPeriod(date(2012, 1, 15),
                                                   date(2013, 1, 15))))
 
-  def testTwoYearsAtMiddleOfMonth(self):
+  def test_TwoYearsAtMiddleOfMonth(self):
     schedule = EveryMonth(15)
     self.assertEquals(24,
                       len(schedule.datesForPeriod(date(2012, 1, 1),
                                                   date(2014, 1, 1))))
 
-  def testTwoYearsAtIntervalBorders(self):
+  def test_TwoYearsAtIntervalBorders(self):
     schedule = EveryMonth(15)
     self.assertEquals(25,
                       len(schedule.datesForPeriod(date(2012, 1, 15),
@@ -170,18 +170,18 @@ class EveryMonthTest(unittest.TestCase):
 
 
 class EveryWeekTest(unittest.TestCase):
-  def testExceptionForInvalidWeekday(self):
+  def test_ExceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, EveryWeek, 0)
     self.assertRaises(ValueError, EveryWeek, 8)
 
-  def testNormalization(self):
+  def test_Normalization(self):
     schedule = EveryWeek()
     self.assertEquals(10, schedule.dailyPortionOf(70))
     self.assertEquals(1, schedule.dailyPortionOf(7))
     self.assertLess(schedule.dailyPortionOf(6), 1)
     self.assertGreater(schedule.dailyPortionOf(8), 1)
 
-  def testDatesForPeriod(self):
+  def test_DatesForPeriod(self):
     schedule = EveryWeek(6)
     self.assertEquals([date(2011, 12, 24),
                        date(2011, 12, 31),
@@ -189,7 +189,7 @@ class EveryWeekTest(unittest.TestCase):
                       schedule.datesForPeriod(date(2011, 12, 24),
                                               date(2012, 1, 7)))
 
-  def testDatesForPeriod_SameStartAndEndDate(self):
+  def test_DatesForPeriod_SameStartAndEndDate(self):
     schedule = EveryWeek(6)
     self.assertEquals([date(2011, 12, 24)],
                       schedule.datesForPeriod(date(2011, 12, 24),
@@ -199,18 +199,18 @@ class EveryWeekTest(unittest.TestCase):
 
 
 class OnceInTwoWeeksTest(unittest.TestCase):
-  def testExceptionForInvalidWeekday(self):
+  def test_ExceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, OnceInTwoWeeks, 0)
     self.assertRaises(ValueError, OnceInTwoWeeks, 8)
 
-  def testNormalization(self):
+  def test_Normalization(self):
     schedule = OnceInTwoWeeks()
     self.assertEquals(10, schedule.dailyPortionOf(140))
     self.assertEquals(1, schedule.dailyPortionOf(14))
     self.assertLess(schedule.dailyPortionOf(13), 1)
     self.assertGreater(schedule.dailyPortionOf(15), 1)
 
-  def testDatesForPeriod(self):
+  def test_DatesForPeriod(self):
     schedule = OnceInTwoWeeks(6)
     self.assertEquals([date(2011, 12, 24),
                        date(2012, 1, 7),
@@ -218,7 +218,7 @@ class OnceInTwoWeeksTest(unittest.TestCase):
                       schedule.datesForPeriod(date(2011, 12, 24),
                                               date(2012, 1, 21)))
 
-  def testDatesForPeriod_SameStartAndEndDate(self):
+  def test_DatesForPeriod_SameStartAndEndDate(self):
     schedule = OnceInTwoWeeks(6)
     self.assertEquals([date(2011, 12, 24)],
                       schedule.datesForPeriod(date(2011, 12, 24),
@@ -228,15 +228,14 @@ class OnceInTwoWeeksTest(unittest.TestCase):
 
 
 class EveryYearTest(unittest.TestCase):
-
-  def testNormalization(self):
+  def test_Normalization(self):
     schedule = EveryYear(1, 1)
     self.assertEquals(10, schedule.dailyPortionOf(3650))
     self.assertEquals(1, schedule.dailyPortionOf(365))
     self.assertLess(schedule.dailyPortionOf(364), 1)
     self.assertGreater(schedule.dailyPortionOf(366), 1)
 
-  def testValidMonthsInYear(self):
+  def test_ValidMonthsInYear(self):
     dayInMonth = 1
     # should not raise for the months 1..12
     for monthInYear in range(1, 13):
@@ -245,7 +244,7 @@ class EveryYearTest(unittest.TestCase):
     self.assertRaises(ValueError, EveryYear, 0, dayInMonth)
     self.assertRaises(ValueError, EveryYear, 13, dayInMonth)
 
-  def testValidDaysInJanuary(self):
+  def test_ValidDaysInJanuary(self):
     monthInYear = 1
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 32):
@@ -254,7 +253,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInFebruary(self):
+  def test_ValidDaysInFebruary(self):
     monthInYear = 2
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 29):
@@ -263,7 +262,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 29]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInMarch(self):
+  def test_ValidDaysInMarch(self):
     monthInYear = 3
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 32):
@@ -272,7 +271,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInApril(self):
+  def test_ValidDaysInApril(self):
     monthInYear = 4
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -281,7 +280,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 31]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInMai(self):
+  def test_ValidDaysInMai(self):
     monthInYear = 5
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -290,7 +289,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInJune(self):
+  def test_ValidDaysInJune(self):
     monthInYear = 6
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -299,7 +298,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 31]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInJuly(self):
+  def test_ValidDaysInJuly(self):
     monthInYear = 7
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -308,7 +307,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInAugust(self):
+  def test_ValidDaysInAugust(self):
     monthInYear = 8
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -317,7 +316,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInSeptember(self):
+  def test_ValidDaysInSeptember(self):
     monthInYear = 9
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -326,7 +325,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 31]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInOctober(self):
+  def test_ValidDaysInOctober(self):
     monthInYear = 10
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -335,7 +334,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInNovember(self):
+  def test_ValidDaysInNovember(self):
     monthInYear = 11
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -344,7 +343,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 31]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testValidDaysInDecember(self):
+  def test_ValidDaysInDecember(self):
     monthInYear = 12
     # should not raise for the valid days in this month
     for dayInMonth in range(1, 31):
@@ -353,7 +352,7 @@ class EveryYearTest(unittest.TestCase):
     for dayInMonth in [0, 32]:
       self.assertRaises(ValueError, EveryYear, monthInYear, dayInMonth)
 
-  def testDatesForPeriod(self):
+  def test_DatesForPeriod(self):
     schedule = EveryYear(12, 31)
     self.assertEquals([date(2011, 12, 31),
                        date(2012, 12, 31)], schedule.datesForPeriod(date(2011, 12, 24),
@@ -371,48 +370,57 @@ class ChangeTest(unittest.TestCase):
 
 
 class GainTest(unittest.TestCase):
-  def testOneSalaryDuringOneMonth(self):
+  def test_OneSalaryDuringOneMonth(self):
     gain = Gain('salary', 2000, EveryMonth(28))
     self.assertEquals([Transfer(date(2012, 1, 28), 'salary', 2000)],
                       gain.transfersForPeriod(date(2012, 1, 1),
                                               date(2012, 1, 31)))
 
-  def testOneSalaryDuringAlmostTwoMonths(self):
+  def test_OneSalaryDuringAlmostTwoMonths(self):
     gain = Gain('salary', 2000, EveryMonth(28))
     self.assertEquals([Transfer(date(2012, 1, 28), 'salary', 2000)],
                       gain.transfersForPeriod(date(2012, 1, 1),
                                               date(2012, 2, 27)))
 
-  def testTwoSalariesDuringTwoWholeMonths(self):
+  def test_TwoSalariesDuringTwoWholeMonths(self):
     gain = Gain('salary', 2000, EveryMonth(28))
     self.assertEquals([Transfer(date(2012, 2, 28), 'salary', 2000),
                        Transfer(date(2012, 3, 28), 'salary', 2000)],
                       gain.transfersForPeriod(date(2012, 2, 1),
                                               date(2012, 3, 31)))
 
-  def testTwoSalariesForMinimalPeriod(self):
+  def test_TwoSalariesForMinimalPeriod(self):
     gain = Gain('salary', 2000, EveryMonth(28))
     self.assertEquals([Transfer(date(2012, 2, 28), 'salary', 2000),
                        Transfer(date(2012, 3, 28), 'salary', 2000)],
                       gain.transfersForPeriod(date(2012, 2, 28),
                                               date(2012, 3, 28)))
 
-  def testTwoSalariesForMaximalPeriod(self):
+  def test_TwoSalariesForMaximalPeriod(self):
     gain = Gain('salary', 2000, EveryMonth(28))
     self.assertEquals([Transfer(date(2012, 2, 28), 'salary', 2000),
                        Transfer(date(2012, 3, 28), 'salary', 2000)],
                       gain.transfersForPeriod(date(2012, 1, 29),
                                               date(2012, 4, 27)))
 
-  def testDailyAverage(self):
+  def test_DailyAverage(self):
     gain = Gain('salary', 1800, EveryMonth(28))
     self.assertEquals(60, gain.dailyAverage())
 
 ######################################################################## 
 
 
+class TransferTest(unittest.TestCase):
+  def test_StringRepresentation(self):
+    transfer = Transfer(date(2014, 1, 1), 'New Year', 200)
+    self.assertEqual(transfer.__repr__(),
+                     'Transfer(2014-01-01,New Year,200)')
+
+########################################################################
+
+
 class GroupTest(unittest.TestCase):
-  def testDailyAverage(self):
+  def test_DailyAverage(self):
     group = Group('g1', [Gain('salary', 1000, EveryMonth(28)),
                          Gain('stocks', 5000, EveryMonth(1))])
     self.assertEquals(200, group.dailyAverage())
@@ -431,16 +439,16 @@ class PortfolioTest(unittest.TestCase):
                             Dump('dope', 500, EveryMonth(20))])
     self.portfolio = Portfolio([g1, g2, d1, d2])
 
-  def testMonthlyGains(self):
+  def test_MonthlyGains(self):
     self.assertAlmostEquals(2400, self.portfolio.monthlyGains())
 
-  def testMonthlyDumps(self):
+  def test_MonthlyDumps(self):
     self.assertAlmostEquals(1700, self.portfolio.monthlyDumps())
 
-  def testMonthlyBalance(self):
+  def test_MonthlyBalance(self):
     self.assertAlmostEquals(700, self.portfolio.monthlyBalance())
 
-  def testTransfersForPeriod(self):
+  def test_TransfersForPeriod(self):
     self.assertEquals([Transfer(date(2012, 2, 1), 'rental', -600),
                        Transfer(date(2012, 2, 1), 'school', -200),
                        Transfer(date(2012, 2, 10), 'car', -400),
@@ -467,7 +475,7 @@ class MoneySheetTest(unittest.TestCase):
     initialBalance = 1000
     self.moneySheet = MoneySheet(initialBalance, portfolio)
 
-  def testForecast(self):
+  def test_Forecast(self):
     self.assertEquals([(Transfer(date(2012, 2, 1), 'PERIOD-BEGIN', 0), 1000),
                        (Transfer(date(2012, 2, 1), 'rental', -600), 400),
                        (Transfer(date(2012, 2, 1), 'school', -200), 200),
@@ -484,17 +492,28 @@ class MoneySheetTest(unittest.TestCase):
 
 
 class ForecastPrinterTest(unittest.TestCase):
-  def testFormattingOfMoneyValues(self):
+  def test_FormattingOfMoneyValues(self):
     printer = ForecastPrinter()
     self.assertEquals('       0', printer.formatMoney(0))
     self.assertEquals('    -123', printer.formatMoney(-123))
     self.assertEquals('    +456', printer.formatMoney(456))
 
+  def test_2(self):
+    self.fail("NEXT")
+
 ######################################################################## 
 
 
-class MoneySheetReaderTest(unittest.TestCase):
-  def testReadingOfMoneysheetData(self):
+class SystemCalendarTest(unittest.TestCase):
+  def test_todayDate(self):
+    calendar = SystemCalendar()
+    self.assertIsNotNone(calendar.todayDate())
+
+########################################################################
+
+
+class SheetReaderTest(unittest.TestCase):
+  def test_ReadingOfMoneysheetData(self):
     expectedSheet = MoneySheet(
       22000,
       Portfolio(
@@ -515,12 +534,23 @@ class MoneySheetReaderTest(unittest.TestCase):
         ])
     )
 
-    reader = MoneySheetReader('impresario.sheet')
+    reader = SheetReader('impresario.sheet')
     actualSheet = reader.getMoneySheet()
     self.assertEquals(expectedSheet, actualSheet)
 
 ######################################################################## 
 
+
+class ForecastRunnerTest(unittest.TestCase):
+
+  def test_RunForOneMonth(self):
+    mockReader = MockReader()
+    mockPrinter = MockPrinter()
+    mockCalendar = MockCalendar()
+    runner = ForecastRunner(mockReader, mockPrinter, mockCalendar)
+    numberOfMonths = 1
+    runner.runForPeriod(numberOfMonths)
+    self.assertTrue(mockPrinter.expectationsMatch)
 
 class MockReader:
   def getMoneySheet(self):
@@ -554,19 +584,14 @@ class MockCalendar:
     return date(2012, 2, 28)
 
 
-class ForecastRunnerTest(unittest.TestCase):
-  def testRunForOneMonth(self):
-    mockReader = MockReader()
-    mockPrinter = MockPrinter()
-    mockCalendar = MockCalendar()
-    runner = ForecastRunner(mockReader, mockPrinter, mockCalendar)
-    numberOfMonths = 1
-    runner.runForPeriod(numberOfMonths)
-    self.assertTrue(mockPrinter.expectationsMatch)
-
 ########################################################################
 
-# TODO: test for Application
+class ConsoleUiTest(unittest.TestCase):
+
+  def test_foo(self):
+    pass  # TODO
+    # ui = ConsoleUI()
+    # ui.runApplication()
 
 ######################################################################## 
 
