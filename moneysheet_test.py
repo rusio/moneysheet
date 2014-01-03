@@ -412,6 +412,46 @@ class GainTest(unittest.TestCase):
 
 
 class TransferTest(unittest.TestCase):
+  def test_LeapMonth_SameDate(self):
+    t1 = Transfer(date(2014, 1, 1), 't1', 100)
+    t2 = Transfer(date(2014, 1, 1), 't2', 100)
+    self.assertFalse(Transfer.leapsMonth(t1, t2))
+
+  def test_LeapMonth_SameMonth(self):
+    t1 = Transfer(date(2014, 1, 1), 't1', 100)
+    t2 = Transfer(date(2014, 1, 2), 't2', 100)
+    self.assertFalse(Transfer.leapsMonth(t1, t2))
+
+  def test_LeapMonth_WrongOrder_1(self):
+    t1 = Transfer(date(2014, 1, 2), 't1', 100)
+    t2 = Transfer(date(2014, 1, 1), 't2', 100)
+    self.assertFalse(Transfer.leapsMonth(t1, t2))
+
+  def test_LeapMonth_WrongOrder_2(self):
+    t1 = Transfer(date(2014, 1, 1), 't1', 100)
+    t2 = Transfer(date(2013, 2, 1), 't2', 100)
+    self.assertFalse(Transfer.leapsMonth(t1, t2))
+
+  def test_LeapMonth_RightOrder_1(self):
+    t1 = Transfer(date(2014, 1, 1), 't1', 100)
+    t2 = Transfer(date(2014, 2, 1), 't2', 100)
+    self.assertTrue(Transfer.leapsMonth(t1, t2))
+
+  def test_LeapMonth_RightOrder_2(self):
+    t1 = Transfer(date(2014, 1, 31), 't1', 100)
+    t2 = Transfer(date(2014, 2, 1), 't2', 100)
+    self.assertTrue(Transfer.leapsMonth(t1, t2))
+
+  def test_LeapMonth_RightOrder_3(self):
+    t1 = Transfer(date(2014, 1, 31), 't1', 100)
+    t2 = Transfer(date(2014, 2, 28), 't2', 100)
+    self.assertTrue(Transfer.leapsMonth(t1, t2))
+
+  def test_LeapMonth_RightOrder_4(self):
+    t1 = Transfer(date(2014, 1, 1), 't1', 100)
+    t2 = Transfer(date(2014, 2, 28), 't2', 100)
+    self.assertTrue(Transfer.leapsMonth(t1, t2))
+
   def test_StringRepresentation(self):
     transfer = Transfer(date(2014, 1, 1), 'New Year', 200)
     self.assertEqual(transfer.__repr__(),

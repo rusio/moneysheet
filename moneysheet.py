@@ -229,8 +229,9 @@ class Transfer:
 
   @classmethod
   def leapsMonth(cls, transfer1, transfer2):
-    # FIXME: implement general leap between months
-    return transfer1.date.day != 1 and transfer2.date.day == 1
+    if transfer1.date > transfer2.date:
+      return False
+    return transfer1.date.month < transfer2.date.month
 
   def __init__(self, date, reason, amount):
     self.date = date
