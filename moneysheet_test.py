@@ -595,13 +595,13 @@ class SheetReaderTest(unittest.TestCase):
                   Gain('concert', 50000, EveryMonth()),
                   Gain('advertising', 2000, EveryWeek()),
                   Dump('equipment', 600, EveryWeek()),
-                  Dump('prostitutes', 2000, EveryWeek()),
+                  Dump('destruction', 2000, EveryWeek()),
                 ]),
           Group('Mars, Bruno',
                 [
                   Gain('sales', 80000, EveryMonth()),
                   Dump('cosmetics', 2000, EveryWeek()),
-                  Dump('gay-porn', 800, EveryWeek()),
+                  Dump('wellness', 800, EveryWeek()),
                 ]),
         ])
     )

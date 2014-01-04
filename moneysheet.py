@@ -359,7 +359,7 @@ class SheetReader:
 
 class ForecastPrinter:
   """
-  Prints a forecast in a formatted way to the console.
+  A printer for printing a forecast in a formatted way to file or stdout.
   """
 
   def __init__(self, outputFile=sys.stdout):
@@ -394,7 +394,8 @@ class ForecastPrinter:
 
 class SystemCalendar:
   """
-  Retrieves the date from the operating system.
+  An adapter for retrieving the current date from the operating system.
+  The purpose of this class is to enable a time-agnostic replacement in a test.
   """
 
   def todayDate(self):
@@ -406,7 +407,7 @@ class SystemCalendar:
 
 class ForecastRunner:
   """
-  Executes the a forecast run, the whole use-case.
+  This interactor executes a forecast run, the whole use-case.
   """
 
   def __init__(self, inputReader, outputPrinter, calendar):
@@ -425,6 +426,10 @@ class ForecastRunner:
 
 
 class ArgsParser(argparse.ArgumentParser):
+  """
+  A parser for the command-line arguments of the console application.
+  """
+
   def __init__(self):
     super().__init__(self)
     self.description = 'The money sheet estimates how much money you would have in the near future.'
@@ -441,7 +446,7 @@ class ArgsParser(argparse.ArgumentParser):
 
 class ConsoleUI:
   """
-  Main entry point of the application.
+  Basic console UI, a boundary point in the application.
   """
 
   def __init__(self, parser=ArgsParser()):
@@ -454,12 +459,12 @@ class ConsoleUI:
                             SystemCalendar())
     runner.runForPeriod(args.forecast_months)
 
+#########################################################################
+
 
 if __name__ == '__main__':
   ui = ConsoleUI()
   ui.runApplication()
-
-#########################################################################
 
 #########################################################################
 

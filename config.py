@@ -1,3 +1,5 @@
+# from moneysheet import *
+
 MoneySheet(
   300, # initial balance
   Portfolio(
