@@ -424,25 +424,28 @@ class ForecastRunner:
 #########################################################################
 
 
+class ArgsParser(argparse.ArgumentParser):
+  def __init__(self):
+    super().__init__(self)
+    self.description = 'The money sheet estimates how much money you would have in the near future.'
+    self.add_argument('-i', '--input-file',
+                      default='config.py',
+                      help='the input file to use for the forecast')
+    self.add_argument('-m', '--forecast-months',
+                      type=int,
+                      default=3,
+                      help='the number of months for the forecast period')
+
+#########################################################################
+
+
 class ConsoleUI:
   """
   Main entry point of the application.
   """
 
-  def __init__(self):
-    self.parser = self.makeArgumentParser()
-
-  def makeArgumentParser(self):
-    parser = argparse.ArgumentParser(
-      description='The money sheet estimates how much money you would have in the near future.')
-    parser.add_argument('-i', '--input-file',
-                        default='config.py',
-                        help='the input file to use for the forecast')
-    parser.add_argument('-m', '--forecast-months',
-                        type=int,
-                        default=3,
-                        help='the number of months for the forecast period')
-    return parser
+  def __init__(self, parser=ArgsParser()):
+    self.parser = parser
 
   def runApplication(self):
     args = self.parser.parse_args()

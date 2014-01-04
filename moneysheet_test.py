@@ -3,6 +3,7 @@
 from datetime import *
 import io
 import unittest
+from unittest.mock import *
 from moneysheet import *
 
 ########################################################################
@@ -657,11 +658,36 @@ class MockCalendar:
 
 ########################################################################
 
-class ConsoleUiTest(unittest.TestCase):
-  def test_foo(self):
-    pass  # TODO
-    # ui = ConsoleUI()
-    # ui.runApplication()
+
+class ArgsParserTest(unittest.TestCase):
+  def setUp(self):
+    self.parser = ArgsParser()
+
+  def test_ParseLongArguments(self):
+    scriptArgs = ['--input-file', '/some/file', '--forecast-months', '5']
+    self.parseAndCheck(scriptArgs)
+
+  def test_ParseShortArguments(self):
+    scriptArgs = ['-i', '/some/file', '-m', '5']
+    self.parseAndCheck(scriptArgs)
+
+  def parseAndCheck(self, scriptArgs):
+    parsedArgs = self.parser.parse_args(args=scriptArgs)
+    self.assertEqual('/some/file', parsedArgs.input_file)
+    self.assertEqual(5, parsedArgs.forecast_months)
+
+########################################################################
+
+class ConsoleUITest(unittest.TestCase):
+  def test_DefaultInitialization(self):
+    ui = ConsoleUI()
+    self.assertIsNotNone(ui.parser)
+
+  def TODO_MockedInitialization(self):
+    parser = Mock()
+    ui = ConsoleUI(parser)
+    ui.runApplication()
+    self.assertIsNotNone(ui.parser)
 
 ######################################################################## 
 
