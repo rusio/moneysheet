@@ -141,23 +141,15 @@ class EveryYear(Schedule):
   """
   A schedule for something that happens periodically every year.
   """
+  daysPerMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
   def __init__(self, monthInYear, dayInMonth, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
-    if monthInYear not in range(1, 13):
-      raise ValueError('month must be in the range [1..12]')
-    if dayInMonth not in range(1, 32):
-      raise ValueError('day must be in the range [1..31]')
-    if monthInYear == 2 and dayInMonth in range(29, 32):
-      raise ValueError('dayInMonth must be in the range [1..28] for February')
-    if monthInYear == 4 and dayInMonth in range(31, 32):
-      raise ValueError('dayInMonth must be in the range [1..30] for April')
-    if monthInYear == 6 and dayInMonth in range(31, 32):
-      raise ValueError('dayInMonth must be in the range [1..30] for June')
-    if monthInYear == 9 and dayInMonth in range(31, 32):
-      raise ValueError('dayInMonth must be in the range [1..30] for September')
-    if monthInYear == 11 and dayInMonth in range(31, 32):
-      raise ValueError('dayInMonth must be in the range [1..30] for November')
+
+    if not 1 <= monthInYear <= 12:
+      raise ValueError('invalid monthInYear supplied: ' + str(monthInYear))
+    if not 1 <= dayInMonth <= EveryYear.daysPerMonth[monthInYear]:
+      raise ValueError('invalid dayInMonth supplied: ' + str(dayInMonth))
 
     self.monthInYear = monthInYear
     self.dayInMonth = dayInMonth
