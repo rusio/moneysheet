@@ -343,6 +343,7 @@ class SheetReader:
   def getMoneySheet(self):
     sheetFile = open(self.sheetFilePath, 'r')
     sheetText = sheetFile.read()
+    sheetText = sheetText.replace('from moneysheet import *', '')
     moneySheet = eval(sheetText)
     return moneySheet
 
@@ -426,7 +427,7 @@ class ArgsParser(argparse.ArgumentParser):
     super().__init__(self)
     self.description = 'The money sheet estimates how much money you would have in the near future.'
     self.add_argument('-i', '--input-file',
-                      default='config.py',
+                      default='sheetdata.py',
                       help='the input file to use for the forecast')
     self.add_argument('-m', '--forecast-months',
                       type=int,
