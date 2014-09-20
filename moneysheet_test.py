@@ -1,6 +1,5 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
-from datetime import *
 import io
 import unittest
 from unittest.mock import *
