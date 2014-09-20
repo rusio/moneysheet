@@ -679,13 +679,13 @@ class ArgsParserTest(unittest.TestCase):
 
 class ConsoleUITest(unittest.TestCase):
   def test_DefaultInitialization(self):
-    ui = ConsoleUI()
+    ui = Application()
     self.assertIsNotNone(ui.parser)
 
   def TODO_MockedInitialization(self):
     parser = Mock()
-    ui = ConsoleUI(parser)
-    ui.runApplication()
+    ui = Application(parser)
+    ui.run()
     self.assertIsNotNone(ui.parser)
 
 ######################################################################## 

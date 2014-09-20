@@ -437,27 +437,32 @@ class ArgsParser(argparse.ArgumentParser):
 #########################################################################
 
 
-class ConsoleUI:
+class Application:
   """
   Basic console UI, a boundary point in the application.
   """
 
-  def __init__(self, parser=ArgsParser()):
+  def __init__(self,
+               parser=ArgsParser(),
+               printer=ForecastPrinter(),
+               calendar=SystemCalendar()):
     self.parser = parser
+    self.printer = printer
+    self.calendar = calendar
 
-  def runApplication(self):
+  def run(self):
     args = self.parser.parse_args()
     runner = ForecastRunner(SheetReader(args.input_file),
-                            ForecastPrinter(),
-                            SystemCalendar())
+                            self.printer,
+                            self.calendar)
     runner.runForPeriod(args.forecast_months)
 
 #########################################################################
 
 
 if __name__ == '__main__':
-  ui = ConsoleUI()
-  ui.runApplication()
+  ui = Application()
+  ui.run()
 
 #########################################################################
 
