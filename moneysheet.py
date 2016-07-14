@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-
-from __future__ import print_function
+from abc import ABCMeta, abstractmethod
+from argparse import ArgumentParser
+from calendar import MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 from datetime import *
-import argparse
-
-#########################################################################
-import sys
+from sys import stdout
 
 
-class Schedule:
+class Schedule(object, metaclass=ABCMeta):
   """
   A schedule for a periodic event. Examples:
   - monthly payment of salary
@@ -20,13 +18,15 @@ class Schedule:
     self._firstDate = firstDate
     self._lastDate = lastDate
 
-  def periodLength(self):  # abstract
-    raise NotImplementedError('subclass must implement periodLength()')
+  @abstractmethod
+  def periodLength(self) -> int:
+    pass
 
-  def matchesDate(self, dateFromPeriod):  # abstract
-    raise NotImplementedError('subclass must implement matchesDate()')
+  @abstractmethod
+  def matchesDate(self, dateFromPeriod: date) -> bool:
+    pass
 
-  def dailyPortionOf(self, value):
+  def dailyPortionOf(self, value) -> float:
     """
     Normalizes the given value to a daily basis,
     according to the period of this schedule.
@@ -35,7 +35,7 @@ class Schedule:
       raise ValueError('value must be positive')
     return float(value) / self.periodLength()
 
-  def datesForPeriod(self, startDate, endDate):
+  def datesForPeriod(self, startDate: date, endDate: date) -> [date]:
     if startDate > endDate:
       raise ValueError('startDate must not be after endDate')
 
@@ -47,14 +47,91 @@ class Schedule:
 
     result = []
     oneDay = timedelta(1)
-    date = startDate
-    while date <= endDate:
-      if self.matchesDate(date):
-        result.append(date)
-      date = date + oneDay
+    elem = startDate
+    while elem <= endDate:
+      if self.matchesDate(elem):
+        result.append(elem)
+      elem += oneDay
     return result
 
-#########################################################################
+
+class OneTime(Schedule):
+  """
+  A special case of a one-time money transfer.
+  """
+
+  def __init__(self, transferDate: date):
+    super().__init__(firstDate=transferDate, lastDate=transferDate)
+    self.transferDate = transferDate
+
+  def matchesDate(self, dateFromPeriod: date) -> bool:
+    return dateFromPeriod == self._firstDate
+
+  def periodLength(self) -> int:
+    return 1
+
+
+class Today(OneTime):
+  """
+  A money transfer that is supposed to happen today.
+  """
+
+  def __init__(self):
+    super().__init__(date.today())
+
+
+class Tomorrow(OneTime):
+  """
+  A money transfer that is supposed to happen tomorrow.
+  """
+
+  def __init__(self):
+    super().__init__(date.today() + timedelta(1))
+
+
+class AfterDays(OneTime):
+  """
+  A money transfer that is supposed to happen after a number of days.
+  """
+
+  def __init__(self, numberOfDays: int):
+    super().__init__(date.today() + timedelta(numberOfDays))
+
+
+class ThisWeek(OneTime):
+  """
+  A money transfer that is supposed to happen on some day during this week.
+  """
+
+  def __init__(self, dayOfWeek: int):
+    super().__init__(ThisWeek.transferDate(date.today(), dayOfWeek))
+
+  @staticmethod
+  def transferDate(todayDate: date, dayOfWeek: int) -> date:
+    if dayOfWeek < todayDate.weekday():
+      raise ValueError("todayDate is in the past")
+    result = todayDate
+    while result.weekday() != dayOfWeek:
+      result += timedelta(1)
+    return result
+
+
+class NextWeek(OneTime):
+  """
+  A money transfer that is supposed to happen on some day during next week.
+  """
+
+  def __init__(self, dayOfWeek: int):
+    super().__init__(NextWeek.transferDate(date.today(), dayOfWeek))
+
+  @staticmethod
+  def transferDate(todayDate: date, dayOfWeek: int) -> date:
+    result = todayDate
+    if result.weekday() == dayOfWeek:
+      result += timedelta(1)
+    while result.weekday() != dayOfWeek:
+      result += timedelta(1)
+    return result
 
 
 class EveryDay(Schedule):
@@ -65,10 +142,10 @@ class EveryDay(Schedule):
   def __init__(self, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
 
-  def periodLength(self):
+  def periodLength(self) -> int:
     return 1
 
-  def matchesDate(self, dateFromPeriod):
+  def matchesDate(self, dateFromPeriod: date) -> bool:
     return True
 
 
@@ -83,13 +160,11 @@ class EveryMonth(Schedule):
       raise ValueError('firingDay must be in the range [1..28]')
     self.firingDay = firingDay
 
-  def periodLength(self):
+  def periodLength(self) -> int:
     return 30
 
-  def matchesDate(self, dateFromPeriod):
-    return (dateFromPeriod.day == self.firingDay)
-
-#########################################################################
+  def matchesDate(self, dateFromPeriod: date) -> bool:
+    return dateFromPeriod.day == self.firingDay
 
 
 class EveryWeek(Schedule):
@@ -103,13 +178,11 @@ class EveryWeek(Schedule):
       raise ValueError('weekday must be in the range [1..7]')
     self.weekday = weekday
 
-  def periodLength(self):
+  def periodLength(self) -> int:
     return 7
 
-  def matchesDate(self, dateFromPeriod):
-    return (dateFromPeriod.isoweekday() == self.weekday)
-
-#########################################################################
+  def matchesDate(self, dateFromPeriod: date) -> bool:
+    return dateFromPeriod.isoweekday() == self.weekday
 
 
 class OnceInTwoWeeks(Schedule):
@@ -124,17 +197,15 @@ class OnceInTwoWeeks(Schedule):
     self.weekday = weekday
     self.matchCount = 0
 
-  def periodLength(self):
+  def periodLength(self) -> int:
     return 14
 
-  def matchesDate(self, dateFromPeriod):
+  def matchesDate(self, dateFromPeriod: date) -> bool:
     if dateFromPeriod.isoweekday() == self.weekday:
       self.matchCount += 1
       if self.matchCount % 2 == 1:
         return True
     return False
-
-#########################################################################
 
 
 class EveryYear(Schedule):
@@ -143,7 +214,7 @@ class EveryYear(Schedule):
   """
   daysPerMonth = [0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-  def __init__(self, monthInYear, dayInMonth, firstDate=date.min, lastDate=date.max):
+  def __init__(self, monthInYear: int, dayInMonth: int, firstDate=date.min, lastDate=date.max):
     Schedule.__init__(self, firstDate, lastDate)
 
     if not 1 <= monthInYear <= 12:
@@ -154,64 +225,14 @@ class EveryYear(Schedule):
     self.monthInYear = monthInYear
     self.dayInMonth = dayInMonth
 
-  def periodLength(self):
+  def periodLength(self) -> int:
     return 365  # TODO 366?
 
-  def matchesDate(self, dateFromPeriod):
+  def matchesDate(self, dateFromPeriod: date) -> bool:
     return (dateFromPeriod.month, dateFromPeriod.day) == (self.monthInYear, self.dayInMonth)
 
-#########################################################################
 
-
-class Change:
-  """
-  A change (positive or negative) in the money balance which
-  has a fixed amount and happens periodically at a given schedule.
-  """
-
-  def __init__(self, description, amount, schedule):
-    self.description = description
-    self.amount = amount
-    self.schedule = schedule
-
-  def transfersForPeriod(self, startDate, endDate):
-    return [Transfer(date, self.description, self.amount)
-            for date in self.schedule.datesForPeriod(startDate, endDate)]
-
-  def dailyAverage(self):
-    return self.schedule.dailyPortionOf(abs(self.amount))
-
-  def __eq__(self, other):
-    equalDescriptions = self.description == other.description
-    equalAmounts = self.amount == other.amount
-    return equalDescriptions and equalAmounts
-
-#########################################################################
-
-
-class Gain(Change):
-  """
-  Incoming money that comes in periodically, based on a schedule.
-  """
-
-  def __init__(self, destination, amount, schedule):
-    Change.__init__(self, destination, +amount, schedule)
-
-#########################################################################
-
-
-class Dump(Change):
-  """
-  Outgoing money that goes out periodically, based on a schedule.
-  """
-
-  def __init__(self, destination, amount, schedule):
-    Change.__init__(self, destination, -amount, schedule)
-
-#########################################################################
-
-
-class Transfer:
+class Transfer(object):
   """
   A concrete transfer of money on a given date. Note the difference from
   Gain and Dump - a Gain or Dump is just the description of the incoming
@@ -225,7 +246,7 @@ class Transfer:
       return False
     return transfer1.date.month < transfer2.date.month
 
-  def __init__(self, date, reason, amount):
+  def __init__(self, date: date, reason: str, amount: int):
     self.date = date
     self.reason = reason
     self.amount = amount
@@ -242,19 +263,59 @@ class Transfer:
   def __repr__(self):
     return 'Transfer(' + str(self.date) + ',' + self.reason + ',' + str(self.amount) + ')'
 
-#########################################################################
+
+class Change(object):
+  """
+  A change (positive or negative) in the money balance which
+  has a fixed amount and happens periodically at a given schedule.
+  """
+
+  def __init__(self, description: str, amount: int, schedule: Schedule):
+    self.description = description
+    self.amount = amount
+    self.schedule = schedule
+
+  def transfersForPeriod(self, startDate: date, endDate: date) -> [Transfer]:
+    return [Transfer(date, self.description, self.amount)
+            for date in self.schedule.datesForPeriod(startDate, endDate)]
+
+  def dailyAverage(self) -> int:
+    return self.schedule.dailyPortionOf(abs(self.amount))
+
+  def __eq__(self, other):
+    equalDescriptions = self.description == other.description
+    equalAmounts = self.amount == other.amount
+    return equalDescriptions and equalAmounts
 
 
-class Group:
+class Gain(Change):
+  """
+  Incoming money that comes in periodically, based on a schedule.
+  """
+
+  def __init__(self, destination: str, amount: int, schedule: Schedule):
+    Change.__init__(self, destination, +amount, schedule)
+
+
+class Dump(Change):
+  """
+  Outgoing money that goes out periodically, based on a schedule.
+  """
+
+  def __init__(self, destination: str, amount: int, schedule: Schedule):
+    Change.__init__(self, destination, -amount, schedule)
+
+
+class Group(object):
   """
   A group of multiple Changes under a common category.
   """
 
-  def __init__(self, name, changes):
+  def __init__(self, name: str, changes: [Change]):
     self.name = name
     self.changes = changes
 
-  def dailyAverage(self):
+  def dailyAverage(self) -> int:
     return sum([change.dailyAverage() for change in self.changes])
 
   def __eq__(self, other):
@@ -262,15 +323,13 @@ class Group:
     eq2 = self.changes == other.changes
     return eq1 and eq2
 
-#########################################################################
 
-
-class Portfolio:
+class Portfolio(object):
   """
   The Portfolio contains the data for all Gains and Dumps of the user.
   """
 
-  def __init__(self, groups):
+  def __init__(self, groups: [Group]):
     self.groups = groups
 
   # TODO: add monthlyGains, monthlyDumps, monthlyBalance to report
@@ -291,7 +350,7 @@ class Portfolio:
   def monthlyBalance(self):
     return self.monthlyGains() - self.monthlyDumps()
 
-  def transfersForPeriod(self, startDate, endDate):
+  def transfersForPeriod(self, startDate: date, endDate: date) -> [Transfer]:
     allTransfers = [transfer
                     for group in self.groups
                     for change in group.changes
@@ -301,10 +360,8 @@ class Portfolio:
   def __eq__(self, other):
     return self.groups == other.groups
 
-#########################################################################
 
-
-class MoneySheet:
+class MoneySheet(object):
   """
   The MoneySheet provides central methods for calculating the
   financial forecast. It is bundles the core logic of the app.
@@ -329,10 +386,8 @@ class MoneySheet:
     eq2 = self.portfolio == other.portfolio
     return eq1 and eq2
 
-#########################################################################
 
-
-class SheetReader:
+class SheetReader(object):
   """
   A reader for reading the input file into a MoneySheet object.
   """
@@ -347,15 +402,13 @@ class SheetReader:
     moneySheet = eval(sheetText)
     return moneySheet
 
-#########################################################################
 
-
-class ForecastPrinter:
+class ForecastPrinter(object):
   """
   A printer for printing a forecast in a formatted way to file or stdout.
   """
 
-  def __init__(self, outputFile=sys.stdout):
+  def __init__(self, outputFile=stdout):
     self.outputFile = outputFile
 
   def printForecast(self, forecast):
@@ -382,10 +435,8 @@ class ForecastPrinter:
       result = '+' + result
     return result.rjust(8)
 
-#########################################################################
 
-
-class SystemCalendar:
+class SystemCalendar(object):
   """
   An adapter for retrieving the current date from the operating system.
   The purpose of this class is to enable a time-agnostic replacement in a test.
@@ -395,10 +446,8 @@ class SystemCalendar:
     nowDateTime = datetime.now()
     return nowDateTime.date()
 
-#########################################################################
 
-
-class ForecastRunner:
+class ForecastRunner(object):
   """
   This interactor executes a forecast run, the whole use-case.
   """
@@ -415,10 +464,8 @@ class ForecastRunner:
     forecast = moneySheet.forecastForPeriod(startDate, endDate)
     self.outputPrinter.printForecast(forecast)
 
-#########################################################################
 
-
-class ArgsParser(argparse.ArgumentParser):
+class ArgsParser(ArgumentParser):
   """
   A parser for the command-line arguments of the console application.
   """
@@ -434,10 +481,8 @@ class ArgsParser(argparse.ArgumentParser):
                       default=3,
                       help='the number of months for the forecast period')
 
-#########################################################################
 
-
-class Application:
+class Application(object):
   """
   Basic console UI, a boundary point in the application.
   """
@@ -457,13 +502,8 @@ class Application:
                             self.calendar)
     runner.runForPeriod(args.forecast_months)
 
-#########################################################################
-
 
 if __name__ == '__main__':
-  ui = Application()
-  ui.run()
-
-#########################################################################
-
-
+  print(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY)
+  application = Application()
+  application.run()

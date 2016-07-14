@@ -1,29 +1,14 @@
 #!/usr/bin/env python3
-
-import io
-import unittest
-from unittest.mock import *
+from io import StringIO
+from unittest import main, TestCase
 from moneysheet import *
 
-########################################################################
 
-
-class ScheduleTest(unittest.TestCase):
-  def test_PeriodLength_ExceptionBecauseAbstract(self):
-    self.assertRaises(NotImplementedError,
-                      Schedule.periodLength,
-                      Schedule())
-
-  def test_MatchesDate_ExceptionBecauseAbstract(self):
-    self.assertRaises(NotImplementedError,
-                      Schedule.matchesDate,
-                      Schedule(),
-                      None)
-
+class ScheduleTest(TestCase):
   def test_Normalization_ExceptionForNegativeValue(self):
     self.assertRaises(ValueError,
                       Schedule.dailyPortionOf,
-                      Schedule(),
+                      Today(),
                       -1)
 
   def test_LimitedActivePeriod(self):
@@ -35,7 +20,103 @@ class ScheduleTest(unittest.TestCase):
                                               date(2011, 12, 30)))
 
 
-class EveryDayTest(unittest.TestCase):
+class OnceTestBase(metaclass=ABCMeta):
+  @abstractmethod
+  def getSut(self):
+    pass
+
+  def test_Normalization(self):
+    schedule = self.getSut()
+    self.assertEqual(1, schedule.dailyPortionOf(1))
+    self.assertEqual(2, schedule.dailyPortionOf(2))
+
+  def test_DatesForPeriod(self):
+    schedule = self.getSut()
+    self.assertEqual([schedule.transferDate],
+                     schedule.datesForPeriod(schedule.transferDate,
+                                             schedule.transferDate))
+    self.assertEqual([schedule.transferDate],
+                     schedule.datesForPeriod(schedule.transferDate - timedelta(1),
+                                             schedule.transferDate))
+    self.assertEqual([schedule.transferDate],
+                     schedule.datesForPeriod(schedule.transferDate,
+                                             schedule.transferDate + timedelta(1)))
+    self.assertEqual([schedule.transferDate],
+                     schedule.datesForPeriod(schedule.transferDate - timedelta(1),
+                                             schedule.transferDate + timedelta(1)))
+    self.assertEqual([],
+                     schedule.datesForPeriod(schedule.transferDate + timedelta(1),
+                                             schedule.transferDate + timedelta(2)))
+    self.assertEqual([],
+                     schedule.datesForPeriod(schedule.transferDate - timedelta(2),
+                                             schedule.transferDate - timedelta(1)))
+
+
+class OneTimeTest(TestCase, OnceTestBase):
+  def getSut(self):
+    return OneTime(date(1111, 11, 11))
+
+
+class TodayTest(TestCase, OnceTestBase):
+  def getSut(self):
+    return Today()
+
+  def test_consistency(self):
+    self.assertEqual(date.today(), Today().transferDate)
+
+
+class TomorrowTest(TestCase, OnceTestBase):
+  def getSut(self):
+    return Tomorrow()
+
+  def test_consistency(self):
+    self.assertEqual(Today().transferDate + timedelta(1), Tomorrow().transferDate)
+
+
+class AfterDaysTest(TestCase, OnceTestBase):
+  def getSut(self):
+    return AfterDays(2)
+
+  def test_consistency(self):
+    self.assertEqual(Today().transferDate + timedelta(2), AfterDays(2).transferDate)
+    self.assertEqual(Tomorrow().transferDate + timedelta(1), AfterDays(2).transferDate)
+
+
+class ThisWeekTest(TestCase, OnceTestBase):
+  def getSut(self):
+    return ThisWeek(SUNDAY)
+
+  def test_transferDate(self):
+    monday = date(2016, 4, 11)
+    self.assertEqual(ThisWeek.transferDate(monday, MONDAY), date(2016, 4, 11))
+    self.assertEqual(ThisWeek.transferDate(monday, TUESDAY), date(2016, 4, 12))
+    self.assertEqual(ThisWeek.transferDate(monday, WEDNESDAY), date(2016, 4, 13))
+    self.assertEqual(ThisWeek.transferDate(monday, THURSDAY), date(2016, 4, 14))
+    self.assertEqual(ThisWeek.transferDate(monday, FRIDAY), date(2016, 4, 15))
+    self.assertEqual(ThisWeek.transferDate(monday, SATURDAY), date(2016, 4, 16))
+    self.assertEqual(ThisWeek.transferDate(monday, SUNDAY), date(2016, 4, 17))
+
+  def test_transferDate_Error(self):
+    tuesday = date(2016, 4, 12)
+    self.assertRaises(ValueError, ThisWeek.transferDate, tuesday, MONDAY)
+
+
+class NextWeekTest(TestCase, OnceTestBase):
+  def getSut(self):
+    return NextWeek(MONDAY)
+
+  def test_transferDate(self):
+    sunday = date(2016, 4, 24)
+    self.assertEqual(NextWeek.transferDate(sunday, MONDAY), date(2016, 4, 25))
+    self.assertEqual(NextWeek.transferDate(sunday, TUESDAY), date(2016, 4, 26))
+    self.assertEqual(NextWeek.transferDate(sunday, WEDNESDAY), date(2016, 4, 27))
+    self.assertEqual(NextWeek.transferDate(sunday, THURSDAY), date(2016, 4, 28))
+    self.assertEqual(NextWeek.transferDate(sunday, FRIDAY), date(2016, 4, 29))
+    self.assertEqual(NextWeek.transferDate(sunday, SATURDAY), date(2016, 4, 30))
+    self.assertEqual(NextWeek.transferDate(sunday, SUNDAY), date(2016, 5, 1))
+
+
+class EveryDayTest(TestCase):
   def test_Normalization(self):
     schedule = EveryDay()
     self.assertEquals(10, schedule.dailyPortionOf(10))
@@ -52,10 +133,8 @@ class EveryDayTest(unittest.TestCase):
                       schedule.datesForPeriod(date(2011, 12, 30),
                                               date(2012, 1, 2)))
 
-########################################################################
 
-
-class EveryMonthTest(unittest.TestCase):
+class EveryMonthTest(TestCase):
   def test_ExceptionForInvalidFiringDay(self):
     self.assertRaises(ValueError, EveryMonth, 0)
     self.assertRaises(ValueError, EveryMonth, 29)
@@ -66,7 +145,7 @@ class EveryMonthTest(unittest.TestCase):
                       schedule.datesForPeriod,
                       [date(2013, 2, 10),
                        date(2012, 2, 20)],
-      [])
+                      [])
 
   def test_Normalization(self):
     schedule = EveryMonth()
@@ -167,10 +246,9 @@ class EveryMonthTest(unittest.TestCase):
                       len(schedule.datesForPeriod(date(2012, 1, 15),
                                                   date(2014, 1, 15))))
 
-######################################################################## 
 
 
-class EveryWeekTest(unittest.TestCase):
+class EveryWeekTest(TestCase):
   def test_ExceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, EveryWeek, 0)
     self.assertRaises(ValueError, EveryWeek, 8)
@@ -196,10 +274,8 @@ class EveryWeekTest(unittest.TestCase):
                       schedule.datesForPeriod(date(2011, 12, 24),
                                               date(2011, 12, 24)))
 
-########################################################################
 
-
-class OnceInTwoWeeksTest(unittest.TestCase):
+class OnceInTwoWeeksTest(TestCase):
   def test_ExceptionForInvalidWeekday(self):
     self.assertRaises(ValueError, OnceInTwoWeeks, 0)
     self.assertRaises(ValueError, OnceInTwoWeeks, 8)
@@ -225,10 +301,8 @@ class OnceInTwoWeeksTest(unittest.TestCase):
                       schedule.datesForPeriod(date(2011, 12, 24),
                                               date(2011, 12, 24)))
 
-########################################################################
 
-
-class EveryYearTest(unittest.TestCase):
+class EveryYearTest(TestCase):
   def test_Normalization(self):
     schedule = EveryYear(1, 1)
     self.assertEquals(10, schedule.dailyPortionOf(3650))
@@ -360,17 +434,13 @@ class EveryYearTest(unittest.TestCase):
                                                                     date(2013, 1, 21)))
 
 
-########################################################################
-
-class ChangeTest(unittest.TestCase):
+class ChangeTest(TestCase):
   def TODOtestEquals(self):
     change1 = Change('description', 100, None)
     pass
 
-########################################################################
 
-
-class GainTest(unittest.TestCase):
+class GainTest(TestCase):
   def test_OneSalaryDuringOneMonth(self):
     gain = Gain('salary', 2000, EveryMonth(28))
     self.assertEquals([Transfer(date(2012, 1, 28), 'salary', 2000)],
@@ -408,10 +478,8 @@ class GainTest(unittest.TestCase):
     gain = Gain('salary', 1800, EveryMonth(28))
     self.assertEquals(60, gain.dailyAverage())
 
-######################################################################## 
 
-
-class TransferTest(unittest.TestCase):
+class TransferTest(TestCase):
   def test_LeapMonth_SameDate(self):
     t1 = Transfer(date(2014, 1, 1), 't1', 100)
     t2 = Transfer(date(2014, 1, 1), 't2', 100)
@@ -457,19 +525,15 @@ class TransferTest(unittest.TestCase):
     self.assertEqual(transfer.__repr__(),
                      'Transfer(2014-01-01,New Year,200)')
 
-########################################################################
 
-
-class GroupTest(unittest.TestCase):
+class GroupTest(TestCase):
   def test_DailyAverage(self):
     group = Group('g1', [Gain('salary', 1000, EveryMonth(28)),
                          Gain('stocks', 5000, EveryMonth(1))])
     self.assertEquals(200, group.dailyAverage())
 
-######################################################################## 
 
-
-class PortfolioTest(unittest.TestCase):
+class PortfolioTest(TestCase):
   def setUp(self):
     g1 = Group('work', [Gain('salary', 2000, EveryMonth(28)),
                         Gain('lessons', 100, EveryMonth(15))])
@@ -501,9 +565,7 @@ class PortfolioTest(unittest.TestCase):
                                                         date(2012, 2, 28)))
 
 
-######################################################################## 
-
-class MoneySheetTest(unittest.TestCase):
+class MoneySheetTest(TestCase):
   def setUp(self):
     g1 = Group('work', [Gain('salary', 2000, EveryMonth(28)),
                         Gain('lessons', 100, EveryMonth(15))])
@@ -529,10 +591,8 @@ class MoneySheetTest(unittest.TestCase):
                       self.moneySheet.forecastForPeriod(date(2012, 2, 1),
                                                         date(2012, 2, 28)))
 
-######################################################################## 
 
-
-class ForecastPrinterTest(unittest.TestCase):
+class ForecastPrinterTest(TestCase):
   def test_FormattingOfMoneyValues(self):
     printer = ForecastPrinter()
     self.assertEquals('       0', printer.formatMoney(0))
@@ -540,13 +600,13 @@ class ForecastPrinterTest(unittest.TestCase):
     self.assertEquals('    +456', printer.formatMoney(456))
 
   def test_FormattingOfForecast_1(self):
-    outputFile = io.StringIO()
+    outputFile = StringIO()
     printer = ForecastPrinter(outputFile)
     printer.printForecast(())
     self.assertEqual('', outputFile.getvalue())
 
   def test_FormattingOfForecast_2(self):
-    outputFile = io.StringIO()
+    outputFile = StringIO()
     printer = ForecastPrinter(outputFile)
     printer.printForecast([
       (Transfer(date(2014, 1, 2), 'Transfer-2', 100), 1100),
@@ -558,7 +618,7 @@ class ForecastPrinterTest(unittest.TestCase):
     self.assertEqual(expectedOutput, outputFile.getvalue())
 
   def test_FormattingOfForecast_3(self):
-    outputFile = io.StringIO()
+    outputFile = StringIO()
     printer = ForecastPrinter(outputFile)
     printer.printForecast([
       (Transfer(date(2014, 1, 31), 'Transfer-1', 100), 1100),
@@ -572,18 +632,14 @@ class ForecastPrinterTest(unittest.TestCase):
     expectedOutput += '2014-02-01     +100  Transfer-2           |    +1200\n'
     self.assertEqual(expectedOutput, outputFile.getvalue())
 
-######################################################################## 
 
-
-class SystemCalendarTest(unittest.TestCase):
+class SystemCalendarTest(TestCase):
   def test_todayDate(self):
     calendar = SystemCalendar()
     self.assertIsNotNone(calendar.todayDate())
 
-########################################################################
 
-
-class SheetReaderTest(unittest.TestCase):
+class SheetReaderTest(TestCase):
   def test_ReadingOfMoneysheetData(self):
     expectedSheet = MoneySheet(
       22000,
@@ -604,15 +660,15 @@ class SheetReaderTest(unittest.TestCase):
                 ]),
         ])
     )
-
     reader = SheetReader('impresario.sheet')
     actualSheet = reader.getMoneySheet()
     self.assertEquals(expectedSheet, actualSheet)
 
-######################################################################## 
+
+########################################################################
 
 
-class ForecastRunnerTest(unittest.TestCase):
+class ForecastRunnerTest(TestCase):
   def test_RunForOneMonth(self):
     mockReader = MockReader()
     mockPrinter = MockPrinter()
@@ -655,10 +711,7 @@ class MockCalendar:
     return date(2012, 2, 28)
 
 
-########################################################################
-
-
-class ArgsParserTest(unittest.TestCase):
+class ArgsParserTest(TestCase):
   def setUp(self):
     self.parser = ArgsParser()
 
@@ -675,22 +728,12 @@ class ArgsParserTest(unittest.TestCase):
     self.assertEqual('/some/file', parsedArgs.input_file)
     self.assertEqual(5, parsedArgs.forecast_months)
 
-########################################################################
 
-class ConsoleUITest(unittest.TestCase):
+class ConsoleUITest(TestCase):
   def test_DefaultInitialization(self):
-    ui = Application()
-    self.assertIsNotNone(ui.parser)
+    application = Application()
+    self.assertIsNotNone(application.parser)
 
-  def TODO_MockedInitialization(self):
-    parser = Mock()
-    ui = Application(parser)
-    ui.run()
-    self.assertIsNotNone(ui.parser)
-
-######################################################################## 
 
 if __name__ == '__main__':
-  unittest.main()
-
-
+  main()
