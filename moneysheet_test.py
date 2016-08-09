@@ -593,11 +593,19 @@ class MoneySheetTest(TestCase):
 
 
 class ForecastPrinterTest(TestCase):
+  def setUp(self):
+      self.maxDiff = None
+
   def test_FormattingOfMoneyValues(self):
     printer = ForecastPrinter()
     self.assertEquals('       0', printer.formatMoney(0))
-    self.assertEquals('    -123', printer.formatMoney(-123))
-    self.assertEquals('    +456', printer.formatMoney(456))
+    self.assertEquals(' (-) 123', printer.formatMoney(-123))
+    self.assertEquals(' (+) 456', printer.formatMoney(456))
+
+  def TODOtest_FormattingOfBallanceMoneyValues(self):
+    self.assertEquals('       0', printer.formatBallance(0))
+    self.assertEquals(' (-) 123', printer.formatBallance(-123))
+    self.assertEquals(' (+) 456', printer.formatBallance(456))
 
   def test_FormattingOfForecast_1(self):
     outputFile = StringIO()
@@ -613,8 +621,8 @@ class ForecastPrinterTest(TestCase):
       (Transfer(date(2014, 1, 3), 'Transfer-3', 200), 1300)
     ])
     expectedOutput = ''
-    expectedOutput += '2014-01-02     +100  Transfer-2           |    +1100\n'
-    expectedOutput += '2014-01-03     +200  Transfer-3           |    +1300\n'
+    expectedOutput += '2014-01-02     (+) 100  Transfer-2                               | (+) 1100\n'
+    expectedOutput += '2014-01-03     (+) 200  Transfer-3                               | (+) 1300\n'
     self.assertEqual(expectedOutput, outputFile.getvalue())
 
   def test_FormattingOfForecast_3(self):
@@ -625,11 +633,26 @@ class ForecastPrinterTest(TestCase):
       (Transfer(date(2014, 2, 1), 'Transfer-2', 100), 1200),
     ])
     expectedOutput = ''
-    expectedOutput += '2014-01-31     +100  Transfer-1           |    +1100\n'
+    expectedOutput += '2014-01-31     (+) 100  Transfer-1                               | (+) 1100\n'
     expectedOutput += '\n'
     expectedOutput += 'Sat Feb  1 00:00:00 2014\n'
     expectedOutput += '------------------------\n'
-    expectedOutput += '2014-02-01     +100  Transfer-2           |    +1200\n'
+    expectedOutput += '2014-02-01     (+) 100  Transfer-2                               | (+) 1200\n'
+    self.assertEqual(expectedOutput, outputFile.getvalue())
+
+  def test_FormattingOfForecast_OverNewYear(self):
+    outputFile = StringIO()
+    printer = ForecastPrinter(outputFile)
+    printer.printForecast([
+      (Transfer(date(2016, 12, 31), 'Transfer-1', 100), 1100),
+      (Transfer(date(2017, 1, 1), 'Transfer-2', 100), 1200),
+    ])
+    expectedOutput = ''
+    expectedOutput += '2016-12-31     (+) 100  Transfer-1                               | (+) 1100\n'
+    expectedOutput += '\n'
+    expectedOutput += 'Sun Jan  1 00:00:00 2017\n'
+    expectedOutput += '------------------------\n'
+    expectedOutput += '2017-01-01     (+) 100  Transfer-2                               | (+) 1200\n'
     self.assertEqual(expectedOutput, outputFile.getvalue())
 
 

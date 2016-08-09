@@ -242,9 +242,7 @@ class Transfer(object):
 
   @classmethod
   def leapsMonth(cls, transfer1, transfer2):
-    if transfer1.date > transfer2.date:
-      return False
-    return transfer1.date.month < transfer2.date.month
+    return transfer1.date < transfer2.date and transfer1.date.month != transfer2.date.month
 
   def __init__(self, date: date, reason: str, amount: int):
     self.date = date
@@ -421,18 +419,22 @@ class ForecastPrinter(object):
         print(transfer.date.ctime(), file=self.outputFile)
         print('------------------------', file=self.outputFile)
       print(str(transfer.date),
+            '  ',
             self.formatMoney(transfer.amount),
             '',
-            transfer.reason.ljust(20),
+            transfer.reason.ljust(40),
             '|',
             self.formatMoney(balance),
             file=self.outputFile)
       prevTransfer = transfer
 
   def formatMoney(self, value):
-    result = str(value)
+    if value == 0:
+      result = str(value)
     if value > 0:
-      result = '+' + result
+      result = '(+) ' + str(value)
+    if value < 0:
+      result = '(-) ' + str(abs(value))
     return result.rjust(8)
 
 
@@ -504,6 +506,5 @@ class Application(object):
 
 
 if __name__ == '__main__':
-  print(MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY)
   application = Application()
   application.run()
