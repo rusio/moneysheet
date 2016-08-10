@@ -702,7 +702,7 @@ class ForecastRunnerTest(TestCase):
     self.assertTrue(mockPrinter.expectationsMatch)
 
 
-class MockReader:
+class MockReader(object):
   def getMoneySheet(self):
     testData = MoneySheet(
       1000,
@@ -717,7 +717,7 @@ class MockReader:
     return testData
 
 
-class MockPrinter():
+class MockPrinter(object):
   def printForecast(self, actualForecast):
     expectedForecast = (
       [
@@ -729,7 +729,7 @@ class MockPrinter():
     self.expectationsMatch = (actualForecast == expectedForecast)
 
 
-class MockCalendar:
+class MockCalendar(object):
   def todayDate(self):
     return date(2012, 2, 28)
 

@@ -333,19 +333,19 @@ class Portfolio(object):
   # TODO: add monthlyGains, monthlyDumps, monthlyBalance to report
   # TODO: rename them to average...
 
-  def monthlyGains(self):
+  def monthlyGains(self) -> float:
     totalDailyGains = sum([change.dailyAverage()
                            for group in self.groups
                            for change in group.changes if change.amount > 0])
     return totalDailyGains * EveryMonth().periodLength()
 
-  def monthlyDumps(self):
+  def monthlyDumps(self) -> float:
     totalDailyDumps = sum([change.dailyAverage()
                            for group in self.groups
                            for change in group.changes if change.amount < 0])
     return totalDailyDumps * EveryMonth().periodLength()
 
-  def monthlyBalance(self):
+  def monthlyBalance(self) -> float:
     return self.monthlyGains() - self.monthlyDumps()
 
   def transfersForPeriod(self, startDate: date, endDate: date) -> [Transfer]:
@@ -365,11 +365,11 @@ class MoneySheet(object):
   financial forecast. It is bundles the core logic of the app.
   """
 
-  def __init__(self, initialBalance, portfolio):
+  def __init__(self, initialBalance:float, portfolio:Portfolio):
     self.initialBalance = initialBalance
     self.portfolio = portfolio
 
-  def forecastForPeriod(self, startDate, endDate):
+  def forecastForPeriod(self, startDate:date, endDate:date) -> [Transfer]:
     balance = self.initialBalance
     transfers = self.portfolio.transfersForPeriod(startDate, endDate)
     forecast = [(Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance)]
@@ -390,10 +390,10 @@ class SheetReader(object):
   A reader for reading the input file into a MoneySheet object.
   """
 
-  def __init__(self, sheetFilePath):
+  def __init__(self, sheetFilePath:str):
     self.sheetFilePath = sheetFilePath
 
-  def getMoneySheet(self):
+  def getMoneySheet(self) -> MoneySheet:
     sheetFile = open(self.sheetFilePath, 'r')
     sheetText = sheetFile.read()
     sheetText = sheetText.replace('from moneysheet import *', '')
@@ -409,7 +409,7 @@ class ForecastPrinter(object):
   def __init__(self, outputFile=stdout):
     self.outputFile = outputFile
 
-  def printForecast(self, forecast):
+  def printForecast(self, forecast:[Transfer]):
     prevTransfer = None
     for element in forecast:
       transfer = element[0]
@@ -428,7 +428,7 @@ class ForecastPrinter(object):
             file=self.outputFile)
       prevTransfer = transfer
 
-  def formatMoney(self, value):
+  def formatMoney(self, value:float) -> str:
     if value == 0:
       result = str(value)
     if value > 0:
@@ -444,7 +444,7 @@ class SystemCalendar(object):
   The purpose of this class is to enable a time-agnostic replacement in a test.
   """
 
-  def todayDate(self):
+  def todayDate(self) -> date:
     nowDateTime = datetime.now()
     return nowDateTime.date()
 
@@ -454,12 +454,15 @@ class ForecastRunner(object):
   This interactor executes a forecast run, the whole use-case.
   """
 
-  def __init__(self, inputReader, outputPrinter, calendar):
+  def __init__(self,
+               inputReader:SheetReader,
+               outputPrinter:ForecastPrinter,
+               calendar:SystemCalendar):
     self.inputReader = inputReader
     self.outputPrinter = outputPrinter
     self.calendar = calendar
 
-  def runForPeriod(self, numberOfMonths):
+  def runForPeriod(self, numberOfMonths:int):
     startDate = self.calendar.todayDate()
     endDate = startDate + timedelta(numberOfMonths * 30)
     moneySheet = self.inputReader.getMoneySheet()
