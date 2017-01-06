@@ -752,11 +752,5 @@ class ArgsParserTest(TestCase):
     self.assertEqual(5, parsedArgs.forecast_months)
 
 
-class ConsoleUITest(TestCase):
-  def test_DefaultInitialization(self):
-    application = Application()
-    self.assertIsNotNone(application.parser)
-
-
 if __name__ == '__main__':
   main()

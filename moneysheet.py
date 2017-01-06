@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
 from calendar import MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
@@ -487,27 +486,14 @@ class ArgsParser(ArgumentParser):
                       help='the number of months for the forecast period')
 
 
-class Application(object):
-  """
-  Basic console UI, a boundary point in the application.
-  """
-
-  def __init__(self,
-               parser=ArgsParser(),
-               printer=ForecastPrinter(),
-               calendar=SystemCalendar()):
-    self.parser = parser
-    self.printer = printer
-    self.calendar = calendar
-
-  def run(self):
-    args = self.parser.parse_args()
-    runner = ForecastRunner(SheetReader(args.input_file),
-                            self.printer,
-                            self.calendar)
-    runner.runForPeriod(args.forecast_months)
+def main():
+  parser = ArgsParser()
+  args = parser.parse_args()
+  runner = ForecastRunner(SheetReader(args.input_file),
+                          ForecastPrinter(),
+                          SystemCalendar())
+  runner.runForPeriod(args.forecast_months)
 
 
 if __name__ == '__main__':
-  application = Application()
-  application.run()
+  main()
