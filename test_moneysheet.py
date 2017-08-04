@@ -739,7 +739,7 @@ class SheetReaderTest(TestCase):
                 ]),
         ])
     )
-    reader = SheetReader('impresario.sheet')
+    reader = SheetReader('test_impresario.sheet')
     actualSheet = reader.getMoneySheet()
     self.assertEquals(expectedSheet, actualSheet)
 
