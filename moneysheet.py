@@ -241,24 +241,24 @@ class Transfer(object):
 
   @classmethod
   def leapsMonth(cls, transfer1, transfer2):
-    return transfer1.date < transfer2.date and transfer1.date.month != transfer2.date.month
+    return transfer1.atDate < transfer2.atDate and transfer1.atDate.month != transfer2.atDate.month
 
-  def __init__(self, date: date, reason: str, amount: int):
-    self.date = date
+  def __init__(self, atDate: date, reason: str, amount: int):
+    self.atDate = atDate
     self.reason = reason
     self.amount = amount
 
   def __eq__(self, other):
-    equalDates = self.date == other.date
+    equalDates = self.atDate == other.atDate
     equalReasons = self.reason == other.reason
     equalAmounts = self.amount == other.amount
     return equalDates and equalReasons and equalAmounts
 
   def sortingKey(self):
-    return str(self.date) + self.reason
+    return str(self.atDate) + self.reason
 
   def __repr__(self):
-    return 'Transfer(' + str(self.date) + ',' + self.reason + ',' + str(self.amount) + ')'
+    return 'Transfer(' + str(self.atDate) + ',' + self.reason + ',' + str(self.amount) + ')'
 
 
 class Change(object):
@@ -267,16 +267,31 @@ class Change(object):
   has a fixed amount and happens periodically at a given schedule.
   """
 
-  def __init__(self, description: str, amount: int, schedule: Schedule):
+  def __init__(self, description: str, amount: int, schedule: Schedule, **kwargs):
     self.description = description
     self.amount = amount
     self.schedule = schedule
+    if kwargs is not None:
+      self.goesFrom = kwargs.get('goesFrom')
+      self.goesUntil = kwargs.get('goesUntil')
 
   def transfersForPeriod(self, startDate: date, endDate: date) -> [Transfer]:
-    return [Transfer(date, self.description, self.amount)
-            for date in self.schedule.datesForPeriod(startDate, endDate)]
+    # validate requested date interval
+    if startDate > endDate:
+      raise ValueError("startDate > endDate", startDate, endDate)
+    # narrow the period bounds according to goesFrom and goesUntil
+    if self.goesFrom is not None and startDate < self.goesFrom:
+      startDate = self.goesFrom
+    if self.goesUntil is not None and endDate > self.goesUntil:
+      endDate = self.goesUntil
+    # are we outside the interval range after narrowing?
+    if startDate > endDate:
+      return []
+    # everythig is good, compute the transfers
+    return [Transfer(atDate, self.description, self.amount)
+            for atDate in self.schedule.datesForPeriod(startDate, endDate)]
 
-  def dailyAverage(self) -> int:
+  def dailyAverage(self) -> float:
     return self.schedule.dailyPortionOf(abs(self.amount))
 
   def __eq__(self, other):
@@ -290,8 +305,8 @@ class Gain(Change):
   Incoming money that comes in periodically, based on a schedule.
   """
 
-  def __init__(self, destination: str, amount: int, schedule: Schedule):
-    Change.__init__(self, destination, +amount, schedule)
+  def __init__(self, destination: str, amount: int, schedule: Schedule, **kwargs):
+    Change.__init__(self, destination, +amount, schedule, **kwargs)
 
 
 class Dump(Change):
@@ -299,8 +314,8 @@ class Dump(Change):
   Outgoing money that goes out periodically, based on a schedule.
   """
 
-  def __init__(self, destination: str, amount: int, schedule: Schedule):
-    Change.__init__(self, destination, -amount, schedule)
+  def __init__(self, destination: str, amount: int, schedule: Schedule, **kwargs):
+    Change.__init__(self, destination, -amount, schedule, **kwargs)
 
 
 class Group(object):
@@ -312,7 +327,7 @@ class Group(object):
     self.name = name
     self.changes = changes
 
-  def dailyAverage(self) -> int:
+  def dailyAverage(self) -> float:
     return sum([change.dailyAverage() for change in self.changes])
 
   def __eq__(self, other):
@@ -408,6 +423,15 @@ class ForecastPrinter(object):
   def __init__(self, outputFile=stdout):
     self.outputFile = outputFile
 
+  @staticmethod
+  def formatMoney(value:float) -> str:
+    result = str(value)
+    if value > 0:
+      result = '(+) ' + str(value)
+    if value < 0:
+      result = '(-) ' + str(abs(value))
+    return result.rjust(8)
+
   def printForecast(self, forecast:[Transfer]):
     prevTransfer = None
     for element in forecast:
@@ -415,9 +439,9 @@ class ForecastPrinter(object):
       balance = element[1]
       if prevTransfer and Transfer.leapsMonth(prevTransfer, transfer):
         print('', file=self.outputFile)
-        print(transfer.date.ctime(), file=self.outputFile)
+        print(transfer.atDate.ctime(), file=self.outputFile)
         print('------------------------', file=self.outputFile)
-      print(str(transfer.date),
+      print(str(transfer.atDate),
             '  ',
             self.formatMoney(transfer.amount),
             '',
@@ -426,15 +450,6 @@ class ForecastPrinter(object):
             self.formatMoney(balance),
             file=self.outputFile)
       prevTransfer = transfer
-
-  def formatMoney(self, value:float) -> str:
-    if value == 0:
-      result = str(value)
-    if value > 0:
-      result = '(+) ' + str(value)
-    if value < 0:
-      result = '(-) ' + str(abs(value))
-    return result.rjust(8)
 
 
 class SystemCalendar(object):

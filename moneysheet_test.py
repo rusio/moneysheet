@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from io import StringIO
-from unittest import main, TestCase
+from unittest import TestCase
+
 from moneysheet import *
 
 
@@ -438,6 +439,61 @@ class ChangeTest(TestCase):
   def TODOtestEquals(self):
     change1 = Change('description', 100, None)
     pass
+
+  def test_transfersForPeriod_WithoutLimits(self):
+    change = Change("change", 1, EveryDay())
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 1), date(2017, 1, 1))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 1), date(2017, 1, 2))))
+    self.assertEqual(31, len(change.transfersForPeriod(date(2017, 1, 1), date(2017, 1, 31))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 31), date(2017, 2, 1))))
+    self.assertEqual(32, len(change.transfersForPeriod(date(2017, 1, 1), date(2017, 2, 1))))
+    self.assertRaises(ValueError, change.transfersForPeriod, date(2017, 1, 2), date(2017, 1, 1))
+
+  def test_transfersForPeriod_ValidFrom(self):
+    change = Change("change", 1, EveryDay(), goesFrom=date(2017, 1, 5))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 5))))
+    self.assertEqual(5, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 9))))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 5))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 6))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 6))))
+
+  def test_transfersForPeriod_ValidUntil(self):
+    change = Change("change", 1, EveryDay(), goesUntil=date(2017, 1, 5))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 5))))
+    self.assertEqual(5, len(change.transfersForPeriod(date(2017, 1, 1), date(2017, 1, 5))))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 6))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 5))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 6))))
+
+  def test_transfersForPeriod_FromUntil_0(self):
+    change = Change("change", 1, EveryDay(), goesFrom=date(2017, 1, 4), goesUntil=date(2017, 1, 6))
+    self.assertEqual(0, len(change.transfersForPeriod(date(2017, 1, 1), date(2017, 1, 3))))
+    self.assertEqual(0, len(change.transfersForPeriod(date(2017, 1, 7), date(2017, 1, 9))))
+
+  def test_transfersForPeriod_FromUntil_1(self):
+    change = Change("change", 1, EveryDay(), goesFrom=date(2017, 1, 5), goesUntil=date(2017, 1, 5))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 5))))
+
+  def test_transfersForPeriod_FromUntil_2(self):
+    change = Change("change", 1, EveryDay(), goesFrom=date(2017, 1, 4), goesUntil=date(2017, 1, 5))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 5))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 6))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 3), date(2017, 1, 6))))
+
+  def test_transfersForPeriod_FromUntil_3(self):
+    change = Change("change", 1, EveryDay(), goesFrom=date(2017, 1, 4), goesUntil=date(2017, 1, 6))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 5))))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 4))))
+    self.assertEqual(1, len(change.transfersForPeriod(date(2017, 1, 6), date(2017, 1, 6))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 5))))
+    self.assertEqual(2, len(change.transfersForPeriod(date(2017, 1, 5), date(2017, 1, 6))))
+    self.assertEqual(3, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 6))))
+    self.assertEqual(3, len(change.transfersForPeriod(date(2017, 1, 3), date(2017, 1, 6))))
+    self.assertEqual(3, len(change.transfersForPeriod(date(2017, 1, 4), date(2017, 1, 7))))
+    self.assertEqual(3, len(change.transfersForPeriod(date(2017, 1, 3), date(2017, 1, 7))))
+
+
+
 
 
 class GainTest(TestCase):
