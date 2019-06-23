@@ -1,2 +1,8 @@
+Usability: Automaticall include group name into transfer output
+
+
+Feature: Report cumulated top-10 Dumps at end of forecast over the forecast period. For each dump, display its percentage of all spendings and the cumulated amount for this dump over the period.
+
+
 Tests for equals that use eval() twice.
 
