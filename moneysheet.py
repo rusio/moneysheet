@@ -3,6 +3,7 @@ from argparse import ArgumentParser
 from calendar import MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 from datetime import *
 from sys import stdout
+from typing import List
 
 
 class Schedule(object, metaclass=ABCMeta):
@@ -34,7 +35,7 @@ class Schedule(object, metaclass=ABCMeta):
       raise ValueError('value must be positive')
     return float(value) / self.periodLength()
 
-  def datesForPeriod(self, startDate: date, endDate: date) -> [date]:
+  def datesForPeriod(self, startDate: date, endDate: date) -> List[date]:
     if startDate > endDate:
       raise ValueError('startDate must not be after endDate')
 
@@ -275,7 +276,7 @@ class Change(object):
       self.goesFrom = kwargs.get('goesFrom')
       self.goesUntil = kwargs.get('goesUntil')
 
-  def transfersForPeriod(self, startDate: date, endDate: date) -> [Transfer]:
+  def transfersForPeriod(self, startDate: date, endDate: date) -> List[Transfer]:
     # validate requested date interval
     if startDate > endDate:
       raise ValueError("startDate > endDate", startDate, endDate)
@@ -323,7 +324,7 @@ class Group(object):
   A group of multiple Changes under a common category.
   """
 
-  def __init__(self, name: str, changes: [Change]):
+  def __init__(self, name: str, changes: List[Change]):
     self.name = name
     self.changes = changes
 
@@ -341,7 +342,7 @@ class Portfolio(object):
   The Portfolio contains the data for all Gains and Dumps of the user.
   """
 
-  def __init__(self, groups: [Group]):
+  def __init__(self, groups: List[Group]):
     self.groups = groups
 
   # TODO: add monthlyGains, monthlyDumps, monthlyBalance to report
@@ -362,7 +363,7 @@ class Portfolio(object):
   def monthlyBalance(self) -> float:
     return self.monthlyGains() - self.monthlyDumps()
 
-  def transfersForPeriod(self, startDate: date, endDate: date) -> [Transfer]:
+  def transfersForPeriod(self, startDate: date, endDate: date) -> List[Transfer]:
     allTransfers = [transfer
                     for group in self.groups
                     for change in group.changes
@@ -383,7 +384,7 @@ class MoneySheet(object):
     self.initialBalance = initialBalance
     self.portfolio = portfolio
 
-  def forecastForPeriod(self, startDate:date, endDate:date) -> [Transfer]:
+  def forecastForPeriod(self, startDate:date, endDate:date) -> List[Transfer]:
     balance = self.initialBalance
     transfers = self.portfolio.transfersForPeriod(startDate, endDate)
     forecast = [(Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance)]
@@ -432,7 +433,7 @@ class ForecastPrinter(object):
       result = '(-) ' + str(abs(value))
     return result.rjust(8)
 
-  def printForecast(self, forecast:[Transfer]):
+  def printForecast(self, forecast:List[Transfer]):
     prevTransfer = None
     for element in forecast:
       transfer = element[0]
