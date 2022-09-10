@@ -65,20 +65,20 @@ Periodic Schedules
 
 These predefined *periodic* schedules for money transfers are available:
 
-- EveryMonth: For something that happens periodically every month.
-- EveryWeek: For something that happens periodically every week.
-- EveryDay: For something that happens every day.
-- OnceInTwoWeeks: For something that happens once in two weeks.
-- EveryYear: For something that happens periodically every year.
+- `EveryMonth`: For something that happens periodically every month.
+- `EveryWeek`: For something that happens periodically every week.
+- `EveryDay`: For something that happens every day.
+- `OnceInTwoWeeks`: For something that happens once in two weeks.
+- `EveryYear`: For something that happens periodically every year.
 
 There are also *one-time* schedules money transfers for special situations:
 
-- OneTime: A one-time money transfer on a fixed date in the future.
-- Today: A one-time transfer that is supposed to happen today.
-- Tomorrow: A one-time transfer that is supposed to happen tomorrow.
-- AfterDays: A one-time transfer that is supposed to happen after N days.
-- ThisWeek: A one-time transfer that is supposed to happen this week.
-- NextWeek: A one-time transfer that is supposed to happen next week.
+- `OneTime`: A one-time money transfer on a fixed date in the future.
+- `Today`: A one-time transfer that is supposed to happen today.
+- `Tomorrow`: A one-time transfer that is supposed to happen tomorrow.
+- `AfterDays`: A one-time transfer that is supposed to happen after N days.
+- `ThisWeek`: A one-time transfer that is supposed to happen this week.
+- `NextWeek`: A one-time transfer that is supposed to happen next week.
 
 
 Grouping Changes
