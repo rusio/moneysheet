@@ -267,14 +267,19 @@ class Change(object):
   has a fixed amount and happens periodically at a given schedule.
   """
 
-  def __init__(self, description: str, amount: int, schedule: Schedule, **kwargs):
+  def __init__(
+      self,
+      description: str,
+      amount: int,
+      schedule: Schedule,
+      goesFrom: date = None,
+      goesUntil: date = None
+  ):
     self.description = description
     self.amount = amount
     self.schedule = schedule
-    # TODO: don't pass **kwargs into this class with business logic, pass dates instead
-    if kwargs is not None:
-      self.goesFrom: date = kwargs.get('goesFrom')
-      self.goesUntil: date = kwargs.get('goesUntil')
+    self.goesFrom = goesFrom
+    self.goesUntil = goesUntil
 
   def transfersForPeriod(self, startDate: date, endDate: date) -> List[Transfer]:
     # validate requested date interval
@@ -306,8 +311,22 @@ class Gain(Change):
   Incoming money that comes in periodically, based on a schedule.
   """
 
-  def __init__(self, destination: str, amount: int, schedule: Schedule, **kwargs):
-    Change.__init__(self, destination, +amount, schedule, **kwargs)
+  def __init__(
+      self,
+      destination: str,
+      amount: int,
+      schedule: Schedule,
+      goesFrom: date = None,
+      goesUntil: date = None
+  ):
+    Change.__init__(
+      self,
+      destination,
+      +amount,
+      schedule,
+      goesFrom=goesFrom,
+      goesUntil=goesUntil
+    )
 
 
 class Dump(Change):
@@ -315,8 +334,22 @@ class Dump(Change):
   Outgoing money that goes out periodically, based on a schedule.
   """
 
-  def __init__(self, destination: str, amount: int, schedule: Schedule, **kwargs):
-    Change.__init__(self, destination, -amount, schedule, **kwargs)
+  def __init__(
+      self,
+      destination: str,
+      amount: int,
+      schedule: Schedule,
+      goesFrom: date = None,
+      goesUntil: date = None
+  ):
+    Change.__init__(
+      self,
+      destination,
+      -amount,
+      schedule,
+      goesFrom=goesFrom,
+      goesUntil=goesUntil
+    )
 
 
 class Group(object):
