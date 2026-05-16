@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from io import StringIO
 from unittest import TestCase
+from calendar import MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 
 from moneysheet import *
 

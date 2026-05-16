@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
-from calendar import MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
 from datetime import *
 from sys import stdout
 from typing import List
@@ -272,9 +271,10 @@ class Change(object):
     self.description = description
     self.amount = amount
     self.schedule = schedule
+    # TODO: don't pass **kwargs into this class with business logic, pass dates instead
     if kwargs is not None:
-      self.goesFrom = kwargs.get('goesFrom')
-      self.goesUntil = kwargs.get('goesUntil')
+      self.goesFrom: date = kwargs.get('goesFrom')
+      self.goesUntil: date = kwargs.get('goesUntil')
 
   def transfersForPeriod(self, startDate: date, endDate: date) -> List[Transfer]:
     # validate requested date interval
@@ -390,7 +390,7 @@ class MoneySheet(object):
     self.initialBalance = initialBalance
     self.portfolio = portfolio
 
-  def forecastForPeriod(self, startDate: date, endDate: date) -> List[Transfer]:
+  def forecastForPeriod(self, startDate: date, endDate: date) -> list[tuple[Transfer, float]]:
     balance = self.initialBalance
     transfers = self.portfolio.transfersForPeriod(startDate, endDate)
     forecast = [(Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance)]
@@ -439,7 +439,7 @@ class ForecastPrinter(object):
       result = '(-) ' + str(abs(value))
     return result.rjust(8)
 
-  def printForecast(self, forecast: List[Transfer]):
+  def printForecast(self, forecast: list[tuple[Transfer, float]]):
     prevTransfer = None
     for element in forecast:
       transfer = element[0]
@@ -501,7 +501,7 @@ class ArgsParser(ArgumentParser):
   """
 
   def __init__(self):
-    super().__init__(self)
+    super().__init__()
     self.description = 'The money sheet estimates how much money you would have in the near future.'
     self.add_argument(
       '-i', '--input-file',
