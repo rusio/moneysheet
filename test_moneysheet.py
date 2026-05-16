@@ -845,15 +845,16 @@ class ForecastPrinterTest(TestCase):
     self.assertEqual(' (-) 123', printer.formatMoney(-123))
     self.assertEqual(' (+) 456', printer.formatMoney(456))
 
-  def TODOtest_FormattingOfBallanceMoneyValues(self):
-    self.assertEqual('       0', printer.formatBallance(0))
-    self.assertEqual(' (-) 123', printer.formatBallance(-123))
-    self.assertEqual(' (+) 456', printer.formatBallance(456))
+  def test_FormattingOfBallanceMoneyValues(self):
+    printer = ForecastPrinter()
+    self.assertEqual('       0', printer.formatMoney(0))
+    self.assertEqual(' (-) 123', printer.formatMoney(-123))
+    self.assertEqual(' (+) 456', printer.formatMoney(456))
 
   def test_FormattingOfForecast_1(self):
     outputFile = StringIO()
     printer = ForecastPrinter(outputFile)
-    printer.printForecast(())
+    printer.printForecast([])
     self.assertEqual('', outputFile.getvalue())
 
   def test_FormattingOfForecast_2(self):
@@ -933,16 +934,20 @@ class SheetReaderTest(TestCase):
 
 class ForecastRunnerTest(TestCase):
   def test_RunForOneMonth(self):
-    mockReader = MockReader()
-    mockPrinter = MockPrinter()
-    mockCalendar = MockCalendar()
+    mockReader = SheetReaderStub()
+    mockPrinter = ForecastPrinterMock()
+    mockCalendar = SystemCalendarStub()
     runner = ForecastRunner(mockReader, mockPrinter, mockCalendar)
     numberOfMonths = 1
     runner.runForPeriod(numberOfMonths)
     self.assertTrue(mockPrinter.expectationsMatch)
 
 
-class MockReader(object):
+class SheetReaderStub(SheetReader):
+
+  def __init__(self):
+    super().__init__("n/a")
+
   def getMoneySheet(self):
     testData = MoneySheet(
       1000,
@@ -957,7 +962,12 @@ class MockReader(object):
     return testData
 
 
-class MockPrinter(object):
+class ForecastPrinterMock(ForecastPrinter):
+
+  def __init__(self):
+    super().__init__()
+    self.expectationsMatch = False
+
   def printForecast(self, actualForecast):
     expectedForecast = (
       [
@@ -969,7 +979,11 @@ class MockPrinter(object):
     self.expectationsMatch = (actualForecast == expectedForecast)
 
 
-class MockCalendar(object):
+class SystemCalendarStub(SystemCalendar):
+
+  def __init__(self):
+    super().__init__()
+
   def todayDate(self):
     return date(2012, 2, 28)
 
