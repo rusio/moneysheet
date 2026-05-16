@@ -380,11 +380,11 @@ class MoneySheet(object):
   financial forecast. It is bundles the core logic of the app.
   """
 
-  def __init__(self, initialBalance:float, portfolio:Portfolio):
+  def __init__(self, initialBalance: float, portfolio: Portfolio):
     self.initialBalance = initialBalance
     self.portfolio = portfolio
 
-  def forecastForPeriod(self, startDate:date, endDate:date) -> List[Transfer]:
+  def forecastForPeriod(self, startDate: date, endDate: date) -> List[Transfer]:
     balance = self.initialBalance
     transfers = self.portfolio.transfersForPeriod(startDate, endDate)
     forecast = [(Transfer(startDate, 'PERIOD-BEGIN', 0), self.initialBalance)]
@@ -405,15 +405,15 @@ class SheetReader(object):
   A reader for reading the input file into a MoneySheet object.
   """
 
-  def __init__(self, sheetFilePath:str):
+  def __init__(self, sheetFilePath: str):
     self.sheetFilePath = sheetFilePath
 
   def getMoneySheet(self) -> MoneySheet:
-    sheetFile = open(self.sheetFilePath, 'r')
-    sheetText = sheetFile.read()
-    sheetText = sheetText.replace('from moneysheet import *', '')
-    moneySheet = eval(sheetText)
-    return moneySheet
+    with open(self.sheetFilePath, 'r') as sheetFile:
+      sheetText = sheetFile.read()
+      sheetText = sheetText.replace('from moneysheet import *', '')
+      moneySheet = eval(sheetText)
+      return moneySheet
 
 
 class ForecastPrinter(object):
@@ -425,7 +425,7 @@ class ForecastPrinter(object):
     self.outputFile = outputFile
 
   @staticmethod
-  def formatMoney(value:float) -> str:
+  def formatMoney(value: float) -> str:
     result = str(value)
     if value > 0:
       result = '(+) ' + str(value)
@@ -433,7 +433,7 @@ class ForecastPrinter(object):
       result = '(-) ' + str(abs(value))
     return result.rjust(8)
 
-  def printForecast(self, forecast:List[Transfer]):
+  def printForecast(self, forecast: List[Transfer]):
     prevTransfer = None
     for element in forecast:
       transfer = element[0]
@@ -470,14 +470,14 @@ class ForecastRunner(object):
   """
 
   def __init__(self,
-               inputReader:SheetReader,
-               outputPrinter:ForecastPrinter,
-               calendar:SystemCalendar):
+               inputReader: SheetReader,
+               outputPrinter: ForecastPrinter,
+               calendar: SystemCalendar):
     self.inputReader = inputReader
     self.outputPrinter = outputPrinter
     self.calendar = calendar
 
-  def runForPeriod(self, numberOfMonths:int):
+  def runForPeriod(self, numberOfMonths: int):
     startDate = self.calendar.todayDate()
     endDate = startDate + timedelta(numberOfMonths * 30)
     moneySheet = self.inputReader.getMoneySheet()
