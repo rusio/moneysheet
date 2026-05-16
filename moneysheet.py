@@ -255,10 +255,10 @@ class Transfer(object):
     return equalDates and equalReasons and equalAmounts
 
   def sortingKey(self):
-    return str(self.atDate) + self.reason
+    return str(self.atDate.isoformat()) + self.reason
 
   def __repr__(self):
-    return 'Transfer(' + str(self.atDate) + ',' + self.reason + ',' + str(self.amount) + ')'
+    return 'Transfer(' + str(self.atDate.isoformat()) + ',' + self.reason + ',' + str(self.amount) + ')'
 
 
 class Change(object):
@@ -482,7 +482,7 @@ class ForecastPrinter(object):
         print(transfer.atDate.ctime(), file=self.outputFile)
         print('------------------------', file=self.outputFile)
       print(
-        str(transfer.atDate),
+        str(transfer.atDate.isoformat()),
         '  ',
         self.formatMoney(transfer.amount),
         '',
