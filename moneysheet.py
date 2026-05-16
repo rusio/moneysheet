@@ -349,25 +349,31 @@ class Portfolio(object):
   # TODO: rename them to average...
 
   def monthlyGains(self) -> float:
-    totalDailyGains = sum([change.dailyAverage()
-                           for group in self.groups
-                           for change in group.changes if change.amount > 0])
+    totalDailyGains = sum([
+      change.dailyAverage()
+      for group in self.groups
+      for change in group.changes if change.amount > 0
+    ])
     return totalDailyGains * EveryMonth().periodLength()
 
   def monthlyDumps(self) -> float:
-    totalDailyDumps = sum([change.dailyAverage()
-                           for group in self.groups
-                           for change in group.changes if change.amount < 0])
+    totalDailyDumps = sum([
+      change.dailyAverage()
+      for group in self.groups
+      for change in group.changes if change.amount < 0
+    ])
     return totalDailyDumps * EveryMonth().periodLength()
 
   def monthlyBalance(self) -> float:
     return self.monthlyGains() - self.monthlyDumps()
 
   def transfersForPeriod(self, startDate: date, endDate: date) -> List[Transfer]:
-    allTransfers = [transfer
-                    for group in self.groups
-                    for change in group.changes
-                    for transfer in change.transfersForPeriod(startDate, endDate)]
+    allTransfers = [
+      transfer
+      for group in self.groups
+      for change in group.changes
+      for transfer in change.transfersForPeriod(startDate, endDate)
+    ]
     return sorted(allTransfers, key=(lambda x: x.sortingKey()))
 
   def __eq__(self, other):
@@ -442,14 +448,16 @@ class ForecastPrinter(object):
         print('', file=self.outputFile)
         print(transfer.atDate.ctime(), file=self.outputFile)
         print('------------------------', file=self.outputFile)
-      print(str(transfer.atDate),
-            '  ',
-            self.formatMoney(transfer.amount),
-            '',
-            transfer.reason.ljust(40),
-            '|',
-            self.formatMoney(balance),
-            file=self.outputFile)
+      print(
+        str(transfer.atDate),
+        '  ',
+        self.formatMoney(transfer.amount),
+        '',
+        transfer.reason.ljust(40),
+        '|',
+        self.formatMoney(balance),
+        file=self.outputFile
+      )
       prevTransfer = transfer
 
 
@@ -469,10 +477,12 @@ class ForecastRunner(object):
   This interactor executes a forecast run, the whole use-case.
   """
 
-  def __init__(self,
-               inputReader: SheetReader,
-               outputPrinter: ForecastPrinter,
-               calendar: SystemCalendar):
+  def __init__(
+      self,
+      inputReader: SheetReader,
+      outputPrinter: ForecastPrinter,
+      calendar: SystemCalendar
+  ):
     self.inputReader = inputReader
     self.outputPrinter = outputPrinter
     self.calendar = calendar
@@ -493,21 +503,27 @@ class ArgsParser(ArgumentParser):
   def __init__(self):
     super().__init__(self)
     self.description = 'The money sheet estimates how much money you would have in the near future.'
-    self.add_argument('-i', '--input-file',
-                      default='sheetdata.py',
-                      help='the input file to use for the forecast')
-    self.add_argument('-m', '--forecast-months',
-                      type=int,
-                      default=3,
-                      help='the number of months for the forecast period')
+    self.add_argument(
+      '-i', '--input-file',
+      default='sheetdata.py',
+      help='the input file to use for the forecast'
+    )
+    self.add_argument(
+      '-m', '--forecast-months',
+      type=int,
+      default=3,
+      help='the number of months for the forecast period'
+    )
 
 
 def main():
   parser = ArgsParser()
   args = parser.parse_args()
-  runner = ForecastRunner(SheetReader(args.input_file),
-                          ForecastPrinter(),
-                          SystemCalendar())
+  runner = ForecastRunner(
+    SheetReader(args.input_file),
+    ForecastPrinter(),
+    SystemCalendar()
+  )
   runner.runForPeriod(args.forecast_months)
 
 

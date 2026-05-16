@@ -7,18 +7,29 @@ from moneysheet import *
 
 class ScheduleTest(TestCase):
   def test_Normalization_ExceptionForNegativeValue(self):
-    self.assertRaises(ValueError,
-                      Schedule.dailyPortionOf,
-                      Today(),
-                      -1)
+    self.assertRaises(
+      ValueError,
+      Schedule.dailyPortionOf,
+      Today(),
+      -1
+    )
 
   def test_LimitedActivePeriod(self):
-    schedule = EveryDay(firstDate=date(2011, 12, 24), lastDate=date(2011, 12, 26))
-    self.assertEqual([date(2011, 12, 24),
-                      date(2011, 12, 25),
-                      date(2011, 12, 26)],
-                     schedule.datesForPeriod(date(2011, 12, 20),
-                                             date(2011, 12, 30)))
+    schedule = EveryDay(
+      firstDate=date(2011, 12, 24),
+      lastDate=date(2011, 12, 26)
+    )
+    self.assertEqual(
+      [
+        date(2011, 12, 24),
+        date(2011, 12, 25),
+        date(2011, 12, 26)
+      ],
+      schedule.datesForPeriod(
+        date(2011, 12, 20),
+        date(2011, 12, 30)
+      )
+    )
 
 
 class OnceTestBase(metaclass=ABCMeta):
@@ -33,24 +44,30 @@ class OnceTestBase(metaclass=ABCMeta):
 
   def test_DatesForPeriod(self):
     schedule = self.getSut()
-    self.assertEqual([schedule.transferDate],
-                     schedule.datesForPeriod(schedule.transferDate,
-                                             schedule.transferDate))
-    self.assertEqual([schedule.transferDate],
-                     schedule.datesForPeriod(schedule.transferDate - timedelta(1),
-                                             schedule.transferDate))
-    self.assertEqual([schedule.transferDate],
-                     schedule.datesForPeriod(schedule.transferDate,
-                                             schedule.transferDate + timedelta(1)))
-    self.assertEqual([schedule.transferDate],
-                     schedule.datesForPeriod(schedule.transferDate - timedelta(1),
-                                             schedule.transferDate + timedelta(1)))
-    self.assertEqual([],
-                     schedule.datesForPeriod(schedule.transferDate + timedelta(1),
-                                             schedule.transferDate + timedelta(2)))
-    self.assertEqual([],
-                     schedule.datesForPeriod(schedule.transferDate - timedelta(2),
-                                             schedule.transferDate - timedelta(1)))
+    self.assertEqual(
+      [schedule.transferDate],
+      schedule.datesForPeriod(schedule.transferDate, schedule.transferDate)
+    )
+    self.assertEqual(
+      [schedule.transferDate],
+      schedule.datesForPeriod(schedule.transferDate - timedelta(1), schedule.transferDate)
+    )
+    self.assertEqual(
+      [schedule.transferDate],
+      schedule.datesForPeriod(schedule.transferDate, schedule.transferDate + timedelta(1))
+    )
+    self.assertEqual(
+      [schedule.transferDate],
+      schedule.datesForPeriod(schedule.transferDate - timedelta(1), schedule.transferDate + timedelta(1))
+    )
+    self.assertEqual(
+      [],
+      schedule.datesForPeriod(schedule.transferDate + timedelta(1), schedule.transferDate + timedelta(2))
+    )
+    self.assertEqual(
+      [],
+      schedule.datesForPeriod(schedule.transferDate - timedelta(2), schedule.transferDate - timedelta(1))
+    )
 
 
 class OneTimeTest(TestCase, OnceTestBase):
@@ -127,12 +144,18 @@ class EveryDayTest(TestCase):
 
   def test_DatesForPeriod(self):
     schedule = EveryDay()
-    self.assertEqual([date(2011, 12, 30),
-                      date(2011, 12, 31),
-                      date(2012, 1, 1),
-                      date(2012, 1, 2)],
-                     schedule.datesForPeriod(date(2011, 12, 30),
-                                             date(2012, 1, 2)))
+    self.assertEqual(
+      [
+        date(2011, 12, 30),
+        date(2011, 12, 31),
+        date(2012, 1, 1),
+        date(2012, 1, 2)
+      ],
+      schedule.datesForPeriod(
+        date(2011, 12, 30),
+        date(2012, 1, 2)
+      )
+    )
 
 
 class EveryMonthTest(TestCase):
@@ -142,11 +165,15 @@ class EveryMonthTest(TestCase):
 
   def test_ExceptionForInvalidInterval(self):
     schedule = EveryMonth(15)
-    self.assertRaises(ValueError,
-                      schedule.datesForPeriod,
-                      [date(2013, 2, 10),
-                       date(2012, 2, 20)],
-                      [])
+    self.assertRaises(
+      ValueError,
+      schedule.datesForPeriod,
+      [
+        date(2013, 2, 10),
+        date(2012, 2, 20)
+      ],
+      []
+    )
 
   def test_Normalization(self):
     schedule = EveryMonth()
@@ -157,95 +184,175 @@ class EveryMonthTest(TestCase):
 
   def test_NoDateInsideInterval_0a(self):
     schedule = EveryMonth(15)
-    self.assertEqual([], schedule.datesForPeriod(date(2012, 2, 10),
-                                                 date(2012, 2, 14)))
+    self.assertEqual(
+      [],
+      schedule.datesForPeriod(
+        date(2012, 2, 10),
+        date(2012, 2, 14)
+      )
+    )
 
   def test_NoDateInsideInterval_0b(self):
     schedule = EveryMonth(15)
-    self.assertEqual([], schedule.datesForPeriod(date(2012, 2, 16),
-                                                 date(2012, 2, 20)))
+    self.assertEqual(
+      [],
+      schedule.datesForPeriod(
+        date(2012, 2, 16),
+        date(2012, 2, 20)
+      )
+    )
 
   def test_NoDateInsideInterval_1(self):
     schedule = EveryMonth(15)
-    self.assertEqual([], schedule.datesForPeriod(date(2012, 2, 16),
-                                                 date(2012, 3, 14)))
+    self.assertEqual(
+      [],
+      schedule.datesForPeriod(
+        date(2012, 2, 16),
+        date(2012, 3, 14)
+      )
+    )
 
   def test_NoDateInsideInterval_2(self):
     schedule = EveryMonth(15)
-    self.assertEqual([], schedule.datesForPeriod(date(2012, 12, 16),
-                                                 date(2013, 1, 14)))
+    self.assertEqual(
+      [],
+      schedule.datesForPeriod(
+        date(2012, 12, 16),
+        date(2013, 1, 14)
+      )
+    )
 
   def test_OneDateInsideInterval(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15)],
-                     schedule.datesForPeriod(date(2012, 2, 1),
-                                             date(2012, 2, 28)))
+    self.assertEqual(
+      [date(2012, 2, 15)],
+      schedule.datesForPeriod(
+        date(2012, 2, 1),
+        date(2012, 2, 28)
+      )
+    )
 
   def test_OneDateAtIntervalStart(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15)],
-                     schedule.datesForPeriod(date(2012, 2, 15),
-                                             date(2012, 2, 28)))
+    self.assertEqual(
+      [date(2012, 2, 15)],
+      schedule.datesForPeriod(
+        date(2012, 2, 15),
+        date(2012, 2, 28)
+      )
+    )
 
   def test_OneDateAtIntervalEnd(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15)],
-                     schedule.datesForPeriod(date(2012, 2, 1),
-                                             date(2012, 2, 15)))
+    self.assertEqual(
+      [date(2012, 2, 15)],
+      schedule.datesForPeriod(
+        date(2012, 2, 1),
+        date(2012, 2, 15)
+      )
+    )
 
   def test_OneDateAtSameStartAndEndDate(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15)],
-                     schedule.datesForPeriod(date(2012, 2, 15),
-                                             date(2012, 2, 15)))
+    self.assertEqual(
+      [date(2012, 2, 15)],
+      schedule.datesForPeriod(
+        date(2012, 2, 15),
+        date(2012, 2, 15)
+      )
+    )
 
   def test_TwoDatesInsideInterval_1(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15), date(2012, 3, 15)],
-                     schedule.datesForPeriod(date(2012, 2, 1),
-                                             date(2012, 3, 31)))
+    self.assertEqual(
+      [
+        date(2012, 2, 15),
+        date(2012, 3, 15)
+      ],
+      schedule.datesForPeriod(
+        date(2012, 2, 1),
+        date(2012, 3, 31)
+      )
+    )
 
   def test_TwoDatesInsideInterval_2(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15), date(2012, 3, 15)],
-                     schedule.datesForPeriod(date(2012, 2, 14),
-                                             date(2012, 3, 16)))
+    self.assertEqual(
+      [
+        date(2012, 2, 15),
+        date(2012, 3, 15)
+      ],
+      schedule.datesForPeriod(
+        date(2012, 2, 14),
+        date(2012, 3, 16)
+      )
+    )
 
   def test_TwoDatesInsideInterval_3(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15), date(2012, 3, 15)],
-                     schedule.datesForPeriod(date(2012, 1, 16),
-                                             date(2012, 4, 14)))
+    self.assertEqual(
+      [
+        date(2012, 2, 15),
+        date(2012, 3, 15)
+      ],
+      schedule.datesForPeriod(
+        date(2012, 1, 16),
+        date(2012, 4, 14)
+      )
+    )
 
   def test_TwoDatesAtIntervalBorders_1(self):
     schedule = EveryMonth(15)
-    self.assertEqual([date(2012, 2, 15), date(2012, 3, 15)],
-                     schedule.datesForPeriod(date(2012, 2, 15),
-                                             date(2012, 3, 15)))
+    self.assertEqual(
+      [
+        date(2012, 2, 15),
+        date(2012, 3, 15)
+      ],
+      schedule.datesForPeriod(
+        date(2012, 2, 15),
+        date(2012, 3, 15)
+      )
+    )
 
   def test_OneYearAtMiddleOfMonth(self):
     schedule = EveryMonth(15)
-    self.assertEqual(12,
-                     len(schedule.datesForPeriod(date(2012, 1, 1),
-                                                 date(2013, 1, 1))))
+    self.assertEqual(
+      12,
+      len(schedule.datesForPeriod(
+        date(2012, 1, 1),
+        date(2013, 1, 1)
+      ))
+    )
 
   def test_OneYearAtIntervalBorders(self):
     schedule = EveryMonth(15)
-    self.assertEqual(13,
-                     len(schedule.datesForPeriod(date(2012, 1, 15),
-                                                 date(2013, 1, 15))))
+    self.assertEqual(
+      13,
+      len(schedule.datesForPeriod(
+        date(2012, 1, 15),
+        date(2013, 1, 15)
+      ))
+    )
 
   def test_TwoYearsAtMiddleOfMonth(self):
     schedule = EveryMonth(15)
-    self.assertEqual(24,
-                     len(schedule.datesForPeriod(date(2012, 1, 1),
-                                                 date(2014, 1, 1))))
+    self.assertEqual(
+      24,
+      len(schedule.datesForPeriod(
+        date(2012, 1, 1),
+        date(2014, 1, 1)
+      ))
+    )
 
   def test_TwoYearsAtIntervalBorders(self):
     schedule = EveryMonth(15)
-    self.assertEqual(25,
-                     len(schedule.datesForPeriod(date(2012, 1, 15),
-                                                 date(2014, 1, 15))))
+    self.assertEqual(
+      25,
+      len(schedule.datesForPeriod(
+        date(2012, 1, 15),
+        date(2014, 1, 15)
+      ))
+    )
 
 
 class EveryWeekTest(TestCase):
@@ -262,17 +369,27 @@ class EveryWeekTest(TestCase):
 
   def test_DatesForPeriod(self):
     schedule = EveryWeek(6)
-    self.assertEqual([date(2011, 12, 24),
-                      date(2011, 12, 31),
-                      date(2012, 1, 7)],
-                     schedule.datesForPeriod(date(2011, 12, 24),
-                                             date(2012, 1, 7)))
+    self.assertEqual(
+      [
+        date(2011, 12, 24),
+        date(2011, 12, 31),
+        date(2012, 1, 7)
+      ],
+      schedule.datesForPeriod(
+        date(2011, 12, 24),
+        date(2012, 1, 7)
+      )
+    )
 
   def test_DatesForPeriod_SameStartAndEndDate(self):
     schedule = EveryWeek(6)
-    self.assertEqual([date(2011, 12, 24)],
-                     schedule.datesForPeriod(date(2011, 12, 24),
-                                             date(2011, 12, 24)))
+    self.assertEqual(
+      [date(2011, 12, 24)],
+      schedule.datesForPeriod(
+        date(2011, 12, 24),
+        date(2011, 12, 24)
+      )
+    )
 
 
 class OnceInTwoWeeksTest(TestCase):
@@ -289,17 +406,27 @@ class OnceInTwoWeeksTest(TestCase):
 
   def test_DatesForPeriod(self):
     schedule = OnceInTwoWeeks(6)
-    self.assertEqual([date(2011, 12, 24),
-                      date(2012, 1, 7),
-                      date(2012, 1, 21)],
-                     schedule.datesForPeriod(date(2011, 12, 24),
-                                             date(2012, 1, 21)))
+    self.assertEqual(
+      [
+        date(2011, 12, 24),
+        date(2012, 1, 7),
+        date(2012, 1, 21)
+      ],
+      schedule.datesForPeriod(
+        date(2011, 12, 24),
+        date(2012, 1, 21)
+      )
+    )
 
   def test_DatesForPeriod_SameStartAndEndDate(self):
     schedule = OnceInTwoWeeks(6)
-    self.assertEqual([date(2011, 12, 24)],
-                     schedule.datesForPeriod(date(2011, 12, 24),
-                                             date(2011, 12, 24)))
+    self.assertEqual(
+      [date(2011, 12, 24)],
+      schedule.datesForPeriod(
+        date(2011, 12, 24),
+        date(2011, 12, 24)
+      )
+    )
 
 
 class EveryYearTest(TestCase):
@@ -429,9 +556,16 @@ class EveryYearTest(TestCase):
 
   def test_DatesForPeriod(self):
     schedule = EveryYear(12, 31)
-    self.assertEqual([date(2011, 12, 31),
-                      date(2012, 12, 31)], schedule.datesForPeriod(date(2011, 12, 24),
-                                                                   date(2013, 1, 21)))
+    self.assertEqual(
+      [
+        date(2011, 12, 31),
+        date(2012, 12, 31)
+      ],
+      schedule.datesForPeriod(
+        date(2011, 12, 24),
+        date(2013, 1, 21)
+      )
+    )
 
 
 class ChangeTest(TestCase):
@@ -495,36 +629,62 @@ class ChangeTest(TestCase):
 class GainTest(TestCase):
   def test_OneSalaryDuringOneMonth(self):
     gain = Gain('salary', 2000, EveryMonth(28))
-    self.assertEqual([Transfer(date(2012, 1, 28), 'salary', 2000)],
-                     gain.transfersForPeriod(date(2012, 1, 1),
-                                             date(2012, 1, 31)))
+    self.assertEqual(
+      [Transfer(date(2012, 1, 28), 'salary', 2000)],
+      gain.transfersForPeriod(
+        date(2012, 1, 1),
+        date(2012, 1, 31)
+      )
+    )
 
   def test_OneSalaryDuringAlmostTwoMonths(self):
     gain = Gain('salary', 2000, EveryMonth(28))
-    self.assertEqual([Transfer(date(2012, 1, 28), 'salary', 2000)],
-                     gain.transfersForPeriod(date(2012, 1, 1),
-                                             date(2012, 2, 27)))
+    self.assertEqual(
+      [Transfer(date(2012, 1, 28), 'salary', 2000)],
+      gain.transfersForPeriod(
+        date(2012, 1, 1),
+        date(2012, 2, 27)
+      )
+    )
 
   def test_TwoSalariesDuringTwoWholeMonths(self):
     gain = Gain('salary', 2000, EveryMonth(28))
-    self.assertEqual([Transfer(date(2012, 2, 28), 'salary', 2000),
-                      Transfer(date(2012, 3, 28), 'salary', 2000)],
-                     gain.transfersForPeriod(date(2012, 2, 1),
-                                             date(2012, 3, 31)))
+    self.assertEqual(
+      [
+        Transfer(date(2012, 2, 28), 'salary', 2000),
+        Transfer(date(2012, 3, 28), 'salary', 2000)
+      ],
+      gain.transfersForPeriod(
+        date(2012, 2, 1),
+        date(2012, 3, 31)
+      )
+    )
 
   def test_TwoSalariesForMinimalPeriod(self):
     gain = Gain('salary', 2000, EveryMonth(28))
-    self.assertEqual([Transfer(date(2012, 2, 28), 'salary', 2000),
-                      Transfer(date(2012, 3, 28), 'salary', 2000)],
-                     gain.transfersForPeriod(date(2012, 2, 28),
-                                             date(2012, 3, 28)))
+    self.assertEqual(
+      [
+        Transfer(date(2012, 2, 28), 'salary', 2000),
+        Transfer(date(2012, 3, 28), 'salary', 2000)
+      ],
+      gain.transfersForPeriod(
+        date(2012, 2, 28),
+        date(2012, 3, 28)
+      )
+    )
 
   def test_TwoSalariesForMaximalPeriod(self):
     gain = Gain('salary', 2000, EveryMonth(28))
-    self.assertEqual([Transfer(date(2012, 2, 28), 'salary', 2000),
-                      Transfer(date(2012, 3, 28), 'salary', 2000)],
-                     gain.transfersForPeriod(date(2012, 1, 29),
-                                             date(2012, 4, 27)))
+    self.assertEqual(
+      [
+        Transfer(date(2012, 2, 28), 'salary', 2000),
+        Transfer(date(2012, 3, 28), 'salary', 2000)
+      ],
+      gain.transfersForPeriod(
+        date(2012, 1, 29),
+        date(2012, 4, 27)
+      )
+    )
 
   def test_DailyAverage(self):
     gain = Gain('salary', 1800, EveryMonth(28))
@@ -574,26 +734,38 @@ class TransferTest(TestCase):
 
   def test_StringRepresentation(self):
     transfer = Transfer(date(2014, 1, 1), 'New Year', 200)
-    self.assertEqual(transfer.__repr__(),
-                     'Transfer(2014-01-01,New Year,200)')
+    self.assertEqual(
+      transfer.__repr__(),
+      'Transfer(2014-01-01,New Year,200)'
+    )
 
 
 class GroupTest(TestCase):
   def test_DailyAverage(self):
-    group = Group('g1', [Gain('salary', 1000, EveryMonth(28)),
-                         Gain('stocks', 5000, EveryMonth(1))])
+    group = Group('g1', [
+      Gain('salary', 1000, EveryMonth(28)),
+      Gain('stocks', 5000, EveryMonth(1))
+    ])
     self.assertEqual(200, group.dailyAverage())
 
 
 class PortfolioTest(TestCase):
   def setUp(self):
-    g1 = Group('work', [Gain('salary', 2000, EveryMonth(28)),
-                        Gain('lessons', 100, EveryMonth(15))])
-    g2 = Group('help', [Gain('kindergeld', 300, EveryMonth(10))])
-    d1 = Group('fixed', [Dump('school', 200, EveryMonth(1)),
-                         Dump('rental', 600, EveryMonth(1))])
-    d2 = Group('variable', [Dump('car', 400, EveryMonth(10)),
-                            Dump('dope', 500, EveryMonth(20))])
+    g1 = Group('work', [
+      Gain('salary', 2000, EveryMonth(28)),
+      Gain('lessons', 100, EveryMonth(15))
+    ])
+    g2 = Group('help', [
+      Gain('kindergeld', 300, EveryMonth(10))
+    ])
+    d1 = Group('fixed', [
+      Dump('school', 200, EveryMonth(1)),
+      Dump('rental', 600, EveryMonth(1))
+    ])
+    d2 = Group('variable', [
+      Dump('car', 400, EveryMonth(10)),
+      Dump('dope', 500, EveryMonth(20))
+    ])
     self.portfolio = Portfolio([g1, g2, d1, d2])
 
   def test_MonthlyGains(self):
@@ -606,42 +778,60 @@ class PortfolioTest(TestCase):
     self.assertAlmostEqual(700, self.portfolio.monthlyBalance())
 
   def test_TransfersForPeriod(self):
-    self.assertEqual([Transfer(date(2012, 2, 1), 'rental', -600),
-                      Transfer(date(2012, 2, 1), 'school', -200),
-                      Transfer(date(2012, 2, 10), 'car', -400),
-                      Transfer(date(2012, 2, 10), 'kindergeld', 300),
-                      Transfer(date(2012, 2, 15), 'lessons', 100),
-                      Transfer(date(2012, 2, 20), 'dope', -500),
-                      Transfer(date(2012, 2, 28), 'salary', 2000)],
-                     self.portfolio.transfersForPeriod(date(2012, 2, 1),
-                                                       date(2012, 2, 28)))
+    self.assertEqual(
+      [
+        Transfer(date(2012, 2, 1), 'rental', -600),
+        Transfer(date(2012, 2, 1), 'school', -200),
+        Transfer(date(2012, 2, 10), 'car', -400),
+        Transfer(date(2012, 2, 10), 'kindergeld', 300),
+        Transfer(date(2012, 2, 15), 'lessons', 100),
+        Transfer(date(2012, 2, 20), 'dope', -500),
+        Transfer(date(2012, 2, 28), 'salary', 2000)
+      ],
+      self.portfolio.transfersForPeriod(
+        date(2012, 2, 1),
+        date(2012, 2, 28)
+      )
+    )
 
 
 class MoneySheetTest(TestCase):
   def setUp(self):
-    g1 = Group('work', [Gain('salary', 2000, EveryMonth(28)),
-                        Gain('lessons', 100, EveryMonth(15))])
+    g1 = Group('work', [
+      Gain('salary', 2000, EveryMonth(28)),
+      Gain('lessons', 100, EveryMonth(15))
+    ])
     g2 = Group('help', [Gain('kindergeld', 300, EveryMonth(10))])
-    d1 = Group('fixed', [Dump('school', 200, EveryMonth(1)),
-                         Dump('rental', 600, EveryMonth(1))])
-    d2 = Group('variable', [Dump('car', 400, EveryMonth(10)),
-                            Dump('dope', 500, EveryMonth(20))])
+    d1 = Group('fixed', [
+      Dump('school', 200, EveryMonth(1)),
+      Dump('rental', 600, EveryMonth(1))
+    ])
+    d2 = Group('variable', [
+      Dump('car', 400, EveryMonth(10)),
+      Dump('dope', 500, EveryMonth(20))
+    ])
     portfolio = Portfolio([g1, g2, d1, d2])
     initialBalance = 1000
     self.moneySheet = MoneySheet(initialBalance, portfolio)
 
   def test_Forecast(self):
-    self.assertEqual([(Transfer(date(2012, 2, 1), 'PERIOD-BEGIN', 0), 1000),
-                      (Transfer(date(2012, 2, 1), 'rental', -600), 400),
-                      (Transfer(date(2012, 2, 1), 'school', -200), 200),
-                      (Transfer(date(2012, 2, 10), 'car', -400), -200),
-                      (Transfer(date(2012, 2, 10), 'kindergeld', 300), 100),
-                      (Transfer(date(2012, 2, 15), 'lessons', 100), 200),
-                      (Transfer(date(2012, 2, 20), 'dope', -500), -300),
-                      (Transfer(date(2012, 2, 28), 'salary', 2000), 1700),
-                      (Transfer(date(2012, 2, 28), 'PERIOD-END', 0), 1700)],
-                     self.moneySheet.forecastForPeriod(date(2012, 2, 1),
-                                                       date(2012, 2, 28)))
+    self.assertEqual(
+      [
+        (Transfer(date(2012, 2, 1), 'PERIOD-BEGIN', 0), 1000),
+        (Transfer(date(2012, 2, 1), 'rental', -600), 400),
+        (Transfer(date(2012, 2, 1), 'school', -200), 200),
+        (Transfer(date(2012, 2, 10), 'car', -400), -200),
+        (Transfer(date(2012, 2, 10), 'kindergeld', 300), 100),
+        (Transfer(date(2012, 2, 15), 'lessons', 100), 200),
+        (Transfer(date(2012, 2, 20), 'dope', -500), -300),
+        (Transfer(date(2012, 2, 28), 'salary', 2000), 1700),
+        (Transfer(date(2012, 2, 28), 'PERIOD-END', 0), 1700)
+      ],
+      self.moneySheet.forecastForPeriod(
+        date(2012, 2, 1),
+        date(2012, 2, 28)
+      )
+    )
 
 
 class ForecastPrinterTest(TestCase):
@@ -718,22 +908,19 @@ class SheetReaderTest(TestCase):
   def test_ReadingOfMoneysheetData(self):
     expectedSheet = MoneySheet(
       22000,
-      Portfolio(
-        [
-          Group('Red Hot Chilly Peppers',
-                [
-                  Gain('concert', 50000, EveryMonth()),
-                  Gain('advertising', 2000, EveryWeek()),
-                  Dump('equipment', 600, EveryWeek()),
-                  Dump('destruction', 2000, EveryWeek()),
-                ]),
-          Group('Mars, Bruno',
-                [
-                  Gain('sales', 80000, EveryMonth()),
-                  Dump('cosmetics', 2000, EveryWeek()),
-                  Dump('wellness', 800, EveryWeek()),
-                ]),
-        ])
+      Portfolio([
+        Group('Red Hot Chilly Peppers', [
+          Gain('concert', 50000, EveryMonth()),
+          Gain('advertising', 2000, EveryWeek()),
+          Dump('equipment', 600, EveryWeek()),
+          Dump('destruction', 2000, EveryWeek()),
+        ]),
+        Group('Mars, Bruno', [
+          Gain('sales', 80000, EveryMonth()),
+          Dump('cosmetics', 2000, EveryWeek()),
+          Dump('wellness', 800, EveryWeek()),
+        ]),
+      ])
     )
     reader = SheetReader('test_impresario.sheet')
     actualSheet = reader.getMoneySheet()
