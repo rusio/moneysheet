@@ -378,9 +378,6 @@ class Portfolio(object):
   def __init__(self, groups: List[Group]):
     self.groups = groups
 
-  # TODO: add monthlyGains, monthlyDumps, monthlyBalance to report
-  # TODO: rename them to average...
-
   def monthlyGains(self) -> float:
     totalDailyGains = sum([
       change.dailyAverage()
