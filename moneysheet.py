@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from argparse import ArgumentParser
+from dataclasses import dataclass
 from datetime import *
 from sys import stdout
 from typing import List
@@ -231,6 +232,7 @@ class EveryYear(Schedule):
     return (dateFromPeriod.month, dateFromPeriod.day) == (self.monthInYear, self.dayInMonth)
 
 
+@dataclass(frozen=True)
 class Transfer(object):
   """
   A concrete transfer of money on a given date. Note the difference from
@@ -239,14 +241,13 @@ class Transfer(object):
   on a concrete date, according to the schedule of the Gain or Dump.
   """
 
+  atDate: date
+  reason: str
+  amount: int
+
   @classmethod
   def leapsMonth(cls, transfer1, transfer2):
     return transfer1.atDate < transfer2.atDate and transfer1.atDate.month != transfer2.atDate.month
-
-  def __init__(self, atDate: date, reason: str, amount: int):
-    self.atDate = atDate
-    self.reason = reason
-    self.amount = amount
 
   def __eq__(self, other):
     equalDates = self.atDate == other.atDate
@@ -352,14 +353,14 @@ class Dump(Change):
     )
 
 
+@dataclass(frozen=True)
 class Group(object):
   """
   A group of multiple Changes under a common category.
   """
 
-  def __init__(self, name: str, changes: List[Change]):
-    self.name = name
-    self.changes = changes
+  name: str
+  changes: List[Change]
 
   def dailyAverage(self) -> float:
     return sum([change.dailyAverage() for change in self.changes])
@@ -370,13 +371,13 @@ class Group(object):
     return eq1 and eq2
 
 
+@dataclass(frozen=True)
 class Portfolio(object):
   """
   The Portfolio contains the data for all Gains and Dumps of the user.
   """
 
-  def __init__(self, groups: List[Group]):
-    self.groups = groups
+  groups: List[Group]
 
   def monthlyGains(self) -> float:
     totalDailyGains = sum([
@@ -410,15 +411,15 @@ class Portfolio(object):
     return self.groups == other.groups
 
 
+@dataclass(frozen=True)
 class MoneySheet(object):
   """
   The MoneySheet provides central methods for calculating the
   financial forecast. It is bundles the core logic of the app.
   """
 
-  def __init__(self, initialBalance: float, portfolio: Portfolio):
-    self.initialBalance = initialBalance
-    self.portfolio = portfolio
+  initialBalance: float
+  portfolio: Portfolio
 
   def forecastForPeriod(self, startDate: date, endDate: date) -> list[tuple[Transfer, float]]:
     balance = self.initialBalance
