@@ -33,50 +33,51 @@ class ScheduleTest(TestCase):
     )
 
 
-class OnceTestBase(metaclass=ABCMeta):
-  @abstractmethod
-  def getSut(self):
-    pass
+class SingleTrigger:
+  class Base(TestCase, metaclass=ABCMeta):
+    @abstractmethod
+    def getSut(self):
+      pass
 
-  def test_Normalization(self):
-    schedule = self.getSut()
-    self.assertEqual(1, schedule.dailyPortionOf(1))
-    self.assertEqual(2, schedule.dailyPortionOf(2))
+    def test_Normalization(self):
+      schedule = self.getSut()
+      self.assertEqual(1, schedule.dailyPortionOf(1))
+      self.assertEqual(2, schedule.dailyPortionOf(2))
 
-  def test_DatesForPeriod(self):
-    schedule = self.getSut()
-    self.assertEqual(
-      [schedule.transferDate],
-      schedule.datesForPeriod(schedule.transferDate, schedule.transferDate)
-    )
-    self.assertEqual(
-      [schedule.transferDate],
-      schedule.datesForPeriod(schedule.transferDate - timedelta(1), schedule.transferDate)
-    )
-    self.assertEqual(
-      [schedule.transferDate],
-      schedule.datesForPeriod(schedule.transferDate, schedule.transferDate + timedelta(1))
-    )
-    self.assertEqual(
-      [schedule.transferDate],
-      schedule.datesForPeriod(schedule.transferDate - timedelta(1), schedule.transferDate + timedelta(1))
-    )
-    self.assertEqual(
-      [],
-      schedule.datesForPeriod(schedule.transferDate + timedelta(1), schedule.transferDate + timedelta(2))
-    )
-    self.assertEqual(
-      [],
-      schedule.datesForPeriod(schedule.transferDate - timedelta(2), schedule.transferDate - timedelta(1))
-    )
+    def test_DatesForPeriod(self):
+      schedule = self.getSut()
+      self.assertEqual(
+        [schedule.transferDate],
+        schedule.datesForPeriod(schedule.transferDate, schedule.transferDate)
+      )
+      self.assertEqual(
+        [schedule.transferDate],
+        schedule.datesForPeriod(schedule.transferDate - timedelta(1), schedule.transferDate)
+      )
+      self.assertEqual(
+        [schedule.transferDate],
+        schedule.datesForPeriod(schedule.transferDate, schedule.transferDate + timedelta(1))
+      )
+      self.assertEqual(
+        [schedule.transferDate],
+        schedule.datesForPeriod(schedule.transferDate - timedelta(1), schedule.transferDate + timedelta(1))
+      )
+      self.assertEqual(
+        [],
+        schedule.datesForPeriod(schedule.transferDate + timedelta(1), schedule.transferDate + timedelta(2))
+      )
+      self.assertEqual(
+        [],
+        schedule.datesForPeriod(schedule.transferDate - timedelta(2), schedule.transferDate - timedelta(1))
+      )
 
 
-class OneTimeTest(TestCase, OnceTestBase):
+class OneTimeTest(SingleTrigger.Base):
   def getSut(self):
     return OneTime(date(1111, 11, 11))
 
 
-class TodayTest(TestCase, OnceTestBase):
+class TodayTest(SingleTrigger.Base):
   def getSut(self):
     return Today()
 
@@ -84,7 +85,7 @@ class TodayTest(TestCase, OnceTestBase):
     self.assertEqual(date.today(), Today().transferDate)
 
 
-class TomorrowTest(TestCase, OnceTestBase):
+class TomorrowTest(SingleTrigger.Base):
   def getSut(self):
     return Tomorrow()
 
@@ -92,7 +93,7 @@ class TomorrowTest(TestCase, OnceTestBase):
     self.assertEqual(Today().transferDate + timedelta(1), Tomorrow().transferDate)
 
 
-class AfterDaysTest(TestCase, OnceTestBase):
+class AfterDaysTest(SingleTrigger.Base):
   def getSut(self):
     return AfterDays(2)
 
@@ -101,7 +102,7 @@ class AfterDaysTest(TestCase, OnceTestBase):
     self.assertEqual(Tomorrow().transferDate + timedelta(1), AfterDays(2).transferDate)
 
 
-class ThisWeekTest(TestCase, OnceTestBase):
+class ThisWeekTest(SingleTrigger.Base):
   def getSut(self):
     return ThisWeek(SUNDAY)
 
@@ -120,7 +121,7 @@ class ThisWeekTest(TestCase, OnceTestBase):
     self.assertRaises(ValueError, ThisWeek.transferDate, tuesday, MONDAY)
 
 
-class NextWeekTest(TestCase, OnceTestBase):
+class NextWeekTest(SingleTrigger.Base):
   def getSut(self):
     return NextWeek(MONDAY)
 
